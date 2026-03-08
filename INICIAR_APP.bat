@@ -1,0 +1,6 @@
+@echo off
+title Lanzador HablameLSMM
+echo Conecta tu celular y presiona una tecla...
+pause
+echo Limpiando cache e iniciando...
+npx expo start -c

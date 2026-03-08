@@ -1,0 +1,9 @@
+const { getDefaultConfig } = require('expo/metro-config');
+
+const config = getDefaultConfig(__dirname);
+
+config.resolver.assetExts.push(
+  'glb', 'gltf', 'obj', 'mtl', 'png', 'jpg', 'vrx'
+);
+
+module.exports = config;
