@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Image } from 'react-native';
-import { ArrowLeft, CheckCircle, RotateCcw, Trophy } from 'lucide-react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Image, Platform, StatusBar, Modal } from 'react-native';
+import { CheckCircle, RotateCcw, Trophy, X } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
-import { StatusBar, Platform } from 'react-native';
-// 1. Configuración de niveles (Nivel 5 usa los 16 animales)
+
 const LEVEL_CONFIG = {
   1: { pairs: 3, columns: 2 },
   2: { pairs: 6, columns: 3 },
@@ -12,7 +11,6 @@ const LEVEL_CONFIG = {
   5: { pairs: 16, columns: 4 },
 };
 
-// 2. Base de datos de animales (Asegúrate que los nombres coincidan con tus archivos en assets)
 const ALL_PAIRS = [
   { id: 1, name: 'Caracol', img: require('../../../assets/Animales_Memorama/Caracol.png'), sena: require('../../../assets/Animales_Memorama/Caracol_seña.png') },
   { id: 2, name: 'Cisne', img: require('../../../assets/Animales_Memorama/Cisne.png'), sena: require('../../../assets/Animales_Memorama/Cisne_seña.png') },
@@ -36,6 +34,7 @@ interface Card {
   instanceId: string;
   content: any;
   pairId: number;
+  type: 'animal' | 'seña';
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -46,6 +45,7 @@ export default function Memorama() {
   const [cards, setCards] = useState<Card[]>([]);
   const [flipped, setFlipped] = useState<string[]>([]);
   const [matched, setMatched] = useState<number[]>([]);
+  const [showWinModal, setShowWinModal] = useState(false);
 
   const setupGame = (selectedLevel: number) => {
     const config = LEVEL_CONFIG[selectedLevel as keyof typeof LEVEL_CONFIG];
@@ -53,16 +53,15 @@ export default function Memorama() {
     
     let deck: Card[] = [];
     selectedAnimals.forEach(animal => {
-      // Agregamos la tarjeta del animal
-      deck.push({ instanceId: `img-${animal.id}`, content: animal.img, pairId: animal.id });
-      // Agregamos la tarjeta de la seña
-      deck.push({ instanceId: `sena-${animal.id}`, content: animal.sena, pairId: animal.id });
+      deck.push({ instanceId: `img-${animal.id}`, content: animal.img, pairId: animal.id, type: 'animal' });
+      deck.push({ instanceId: `sena-${animal.id}`, content: animal.sena, pairId: animal.id, type: 'seña' });
     });
 
     setCards(deck.sort(() => Math.random() - 0.5));
     setMatched([]);
     setFlipped([]);
     setLevel(selectedLevel);
+    setShowWinModal(false);
   };
 
   const handleCardPress = (instanceId: string, pairId: number) => {
@@ -76,10 +75,16 @@ export default function Memorama() {
       const secondCard = cards.find(c => c.instanceId === instanceId);
 
       if (firstCard?.pairId === secondCard?.pairId) {
-        setMatched([...matched, pairId]);
+        const newMatched = [...matched, pairId];
+        setMatched(newMatched);
         setFlipped([]);
+        
+        // Verificar si ganó
+        if (newMatched.length === LEVEL_CONFIG[level as keyof typeof LEVEL_CONFIG].pairs) {
+          setTimeout(() => setShowWinModal(true), 500);
+        }
       } else {
-        setTimeout(() => setFlipped([]), 1000);
+        setTimeout(() => setFlipped([]), 800); // Un poco más rápido que antes
       }
     }
   };
@@ -87,18 +92,11 @@ export default function Memorama() {
   if (!level) {
     return (
       <View style={styles.container}>
-        {/* Contenedor Header que baja el botón */}
         <View style={styles.header}>
-          <TouchableOpacity 
-            onPress={() => navigation.goBack()} 
-            style={styles.backButton}
-          >
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <Text style={styles.backText}>← Salir</Text>
           </TouchableOpacity>
-          
-          {/* Opcional: Título al lado del botón */}
-          
-    </View>
+        </View>
         <View style={styles.centerContainer}>
           <Trophy color="#f59e0b" size={60} style={{ marginBottom: 10 }} />
           <Text style={styles.title}>Memorama Animales</Text>
@@ -117,8 +115,7 @@ export default function Memorama() {
   }
 
   const currentConfig = LEVEL_CONFIG[level as keyof typeof LEVEL_CONFIG];
-  const isComplete = matched.length === currentConfig.pairs;
-  const cardSize = (SCREEN_WIDTH - 40 - (10 * (currentConfig.columns - 1))) / currentConfig.columns;
+  const cardSize = (SCREEN_WIDTH - 60) / currentConfig.columns;
 
   return (
     <View style={styles.container}>
@@ -137,41 +134,71 @@ export default function Memorama() {
           {cards.map((card) => {
             const isFlipped = flipped.includes(card.instanceId) || matched.includes(card.pairId);
             const isMatched = matched.includes(card.pairId);
+            const cardBackStyle = card.type === 'animal' ? styles.cardBackRed : styles.cardBackBlue;
 
             return (
               <TouchableOpacity
                 key={card.instanceId}
                 onPress={() => handleCardPress(card.instanceId, card.pairId)}
-                activeOpacity={0.7}
+                activeOpacity={0.8}
                 style={[
                   styles.card,
                   { width: cardSize, height: cardSize },
-                  isFlipped ? styles.cardFlipped : styles.cardBack,
+                  isFlipped ? styles.cardFlipped : cardBackStyle,
                   isMatched && styles.cardMatched
                 ]}
               >
                 {isFlipped ? (
                   <View style={styles.cardContent}>
-                    <Image source={card.content} style={styles.cardImage} resizeMode="contain" />
+                    <Image 
+                        source={card.content} 
+                        style={styles.cardImage} 
+                        resizeMode="contain"
+                        fadeDuration={0} // Elimina el lag de aparición de imagen
+                    />
                   </View>
                 ) : (
-                  <Text style={styles.questionMark}>?</Text>
+                  <Text style={styles.cardTypeText}>
+                    {card.type === 'animal' ? 'Animal' : 'Seña'}
+                  </Text>
                 )}
               </TouchableOpacity>
             );
           })}
         </View>
+      </ScrollView>
 
-        {isComplete && (
-          <View style={styles.successMessage}>
-            <CheckCircle color="#4ade80" size={40} />
-            <Text style={styles.successText}>¡Nivel {level} Superado!</Text>
-            <TouchableOpacity style={styles.nextButton} onPress={() => setLevel(null)}>
-              <Text style={styles.nextButtonText}>Siguiente Desafío</Text>
+      {/* VENTANA FLOTANTE (MODAL) DE VICTORIA */}
+      <Modal
+        visible={showWinModal}
+        transparent={true}
+        animationType="slide"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalIconContainer}>
+               <Trophy color="#f59e0b" size={80} />
+            </View>
+            <Text style={styles.modalTitle}>¡Excelente Trabajo!</Text>
+            <Text style={styles.modalSubtitle}>Has completado todas las parejas del Nivel {level}.</Text>
+            
+            <TouchableOpacity 
+              style={styles.modalNextButton} 
+              onPress={() => setLevel(null)}
+            >
+              <Text style={styles.modalNextButtonText}>Elegir otro Nivel</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.modalRetryButton} 
+              onPress={() => setupGame(level)}
+            >
+              <RotateCcw color="#3b82f6" size={20} />
+              <Text style={styles.modalRetryText}>Repetir Nivel</Text>
             </TouchableOpacity>
           </View>
-        )}
-      </ScrollView>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -194,46 +221,99 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between'
   },
-  backText: {
-    color: 'white', // O el color que prefieras
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
+  backText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
   backButton: {
-    // Esto suma un margen solo si es Android, o 40 píxeles si es iOS
     marginTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 10 : 40,
-    
     padding: 10, backgroundColor: '#3b82f6', borderRadius: 8 
-    // ... tus otros estilos
   },
   levelButtonText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
   levelSubtext: { color: '#22d3ee', fontSize: 14, fontWeight: '600' },
-  gameContent: { padding: 20, paddingBottom: 60 },
+  gameContent: { padding: 10, paddingBottom: 60 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center' },
-  card: { borderRadius: 12, justifyContent: 'center', alignItems: 'center', borderWidth: 2 },
-  cardBack: { backgroundColor: '#334155', borderColor: '#475569' },
-  cardFlipped: { backgroundColor: 'white', borderColor: '#0ea5e9' },
-  cardMatched: { backgroundColor: '#dcfce7', borderColor: '#22c55e', opacity: 0.8 },
-  cardContent: { width: '100%', height: '100%', padding: 8, justifyContent: 'center', alignItems: 'center' },
-  cardImage: { width: '100%', height: '100%' },
-  questionMark: { fontSize: 28, color: '#94a3b8', fontWeight: 'bold' },
-  successMessage: { marginTop: 30, backgroundColor: 'rgba(74, 222, 128, 0.1)', borderRadius: 20, padding: 30, alignItems: 'center', borderWidth: 1, borderColor: '#4ade80' },
-  successText: { color: '#4ade80', fontSize: 22, fontWeight: 'bold', marginVertical: 15 },
-  nextButton: { backgroundColor: '#4ade80', paddingVertical: 12, paddingHorizontal: 25, borderRadius: 10 },
-  nextButtonText: { color: '#064e3b', fontWeight: 'bold' },
-  //backButton: { padding: 5 }
-  headerTitle: { 
+  
+  // ESTILOS DE CARTAS
+  card: { borderRadius: 12, justifyContent: 'center', alignItems: 'center', borderWidth: 3 },
+  cardBackRed: { backgroundColor: '#7f1d1d', borderColor: '#ef4444' },
+  cardBackBlue: { backgroundColor: '#1e3a8a', borderColor: '#3b82f6' },
+  cardFlipped: { backgroundColor: 'white', borderColor: '#ffffff' },
+  cardMatched: { backgroundColor: '#dcfce7', borderColor: '#22c55e', opacity: 0.6 },
+  
+  cardTypeText: { 
     color: 'white', 
-    fontSize: 20, 
+    fontSize: 12, 
     fontWeight: 'bold', 
-    marginLeft: 20 
+    textTransform: 'uppercase',
+    textAlign: 'center'
+  },
+  cardContent: { width: '100%', height: '100%', padding: 5, justifyContent: 'center', alignItems: 'center' },
+  cardImage: { width: '90%', height: '90%' },
+
+  // ESTILOS DEL MODAL
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20
+  },
+  modalContent: {
+    backgroundColor: '#1e293b',
+    width: '100%',
+    borderRadius: 30,
+    padding: 30,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#334155'
+  },
+  modalIconContainer: {
+    marginBottom: 20,
+    backgroundColor: '#334155',
+    padding: 20,
+    borderRadius: 100
+  },
+  modalTitle: {
+    color: 'white',
+    fontSize: 26,
+    fontWeight: 'bold',
+    textAlign: 'center'
+  },
+  modalSubtitle: {
+    color: '#94a3b8',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 10,
+    marginBottom: 30
+  },
+  modalNextButton: {
+    backgroundColor: '#4ade80',
+    width: '100%',
+    padding: 18,
+    borderRadius: 15,
+    alignItems: 'center',
+    marginBottom: 15
+  },
+  modalNextButtonText: {
+    color: '#064e3b',
+    fontSize: 18,
+    fontWeight: 'bold'
+  },
+  modalRetryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 10
+  },
+  modalRetryText: {
+    color: '#3b82f6',
+    fontSize: 16,
+    fontWeight: '600'
   },
   header: {
-    paddingTop: 20, // <-- Esto es lo que evita que choque con la hora
+    paddingTop: 20,
     paddingBottom: 15,
     paddingHorizontal: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(15, 23, 42, 0.9)', // Color oscuro semitransparente
+    backgroundColor: 'rgba(15, 23, 42, 0.9)',
   },
 });

@@ -41,7 +41,7 @@ export default function Vocabulario() {
       <View style={styles.header}>
           <BookOpen color="#22d3ee" size={40} style={{ marginBottom: 10 }} />
           <Text style={styles.title}>Vocabulario</Text>
-          <Text style={styles.subtitle}>Usa la realidad aumentada para aprender señas</Text>
+          <Text style={styles.subtitle}>Usa la realidad aumentada para aprender señaaas</Text>
         </View>
 
       

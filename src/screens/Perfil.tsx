@@ -114,7 +114,7 @@ export default function Perfil({ userProfile, updateUserProfile }: PerfilProps) 
       <View style={styles.sectionContainer}>
         <View style={styles.sectionHeader}>
           <Trophy size={24} color="#facc15" />
-          <Text style={styles.sectionTitle}>Estadísticas</Text>
+          <Text style={styles.sectionTitle}>Estadístissscas</Text>
         </View>
 
         <View style={styles.statsGrid}>
