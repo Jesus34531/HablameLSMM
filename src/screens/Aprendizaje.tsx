@@ -1,76 +1,163 @@
-import React, { Suspense, useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import { Canvas } from '@react-three/fiber/native';
-import { useGLTF, useAnimations } from '@react-three/drei/native';
+import React, { useState } from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
+import {
+  ViroARImageMarker,
+  ViroARScene,
+  ViroARSceneNavigator,
+  ViroARTrackingTargets,
+  ViroVideo,
+} from '@reactvision/react-viro';
 
-// --- COMPONENTE DE LA MANO 3D ---
-function ManoLSM({ letraActual }: { letraActual: string }) {
-  // Asegúrate de poner tu archivo Prueba_Vocales.glb en la carpeta assets de la raíz
-  const modelo = require('../../assets/Vocales_LSM_4.glb'); // Ajusta la ruta a tus assets
-  const { scene, animations } = useGLTF(modelo) as any;
-  const { actions } = useAnimations(animations, scene);
+// --- 1. CONFIGURACIÓN DEL TARGET ---
+ViroARTrackingTargets.createTargets({
+  "familia_target": {
+    source: require('../../assets/videos/imagen1.png'),
+    orientation: "Up",
+    physicalWidth: 0.1, 
+  },
+});
 
-  useEffect(() => {
-    // Detenemos todas las animaciones previas
-    Object.values(actions).forEach(action => action?.stop());
-    
-    // Reproducimos la animación de la letra seleccionada
-    const nombreAnimacion = `LSM_${letraActual}`;
-    if (actions[nombreAnimacion]) {
-      actions[nombreAnimacion].play();
+// --- 2. ESCENA DE REALIDAD AUMENTADA ---
+const EscenaARSaludos = (props: any) => {
+  // Extraemos el ID que pasamos desde el menú
+  const { targetBuscado } = props.arSceneNavigator.viroAppProps;
+
+  // Fix para el error de 'undefined': usamos el valor numérico directo (3 = Tracking Normal)
+  const _onInitialized = (state: any) => {
+    if (state === 3) { 
+      console.log("RA Lista y rastreando el target:", targetBuscado);
     }
-  }, [letraActual, actions]);
+  };
 
-  return <primitive object={scene} scale={1.5} position={[0, -2, 0]} rotation={[0, -Math.PI / 2, 0]}/>;
-}
+  return (
+    <ViroARScene onTrackingUpdated={_onInitialized}>
+      {/* Solo se activará si detecta la tarjeta vinculada a 'targetBuscado' */}
+      <ViroARImageMarker target={targetBuscado}>
+        <ViroVideo
+          source={require('../../assets/videos/video1.mp4')}
+          loop={true}
+          position={[0, 0, 0]}
+          rotation={[-90, 0, 0]}
+          scale={[0.1, 0.1, 0]}
+        />
+      </ViroARImageMarker>
+    </ViroARScene>
+  );
+};
 
-// --- PANTALLA PRINCIPAL DE APRENDIZAJE ---
-export default function Aprendizaje() {
-  const [letra, setLetra] = useState('A'); // Empezamos con la A (o la E si no rehiciste la A)
+// --- 3. COMPONENTE PRINCIPAL (MENÚ) ---
+export default function AprendizajeSaludos() {
+  const [mostrarRA, setMostrarRA] = useState(false);
+  const [targetActivo, setTargetActivo] = useState("");
 
-  const vocales = ['E', 'I', 'O', 'U'];
+  const listaSaludos = [
+    "Hola", "Adios", "Buenos Dias", "Buenas Tardes", "Buenas Noches",
+    "Como estas", "Gracias", "De nada", "Perdon", "Por favor",
+    "Mucho gusto", "Bienvenido", "Si", "No", "Tal vez",
+    "Amigo", "Familia", "Maestro", "Ayuda", "Te quiero"
+  ];
+
+  // Lógica para filtrar: Solo "Familia" funciona por ahora
+  const iniciarEscaneo = (saludo: string) => {
+    if (saludo === "Familia") {
+      setTargetActivo("familia_target");
+      setMostrarRA(true);
+    } else {
+      Alert.alert(
+        "Seña no disponible",
+        `La tarjeta para "${saludo}" aún no ha sido registrada.`
+      );
+    }
+  };
+
+  if (mostrarRA) {
+    return (
+      <View style={styles.fullScreen}>
+        <ViroARSceneNavigator
+          autofocus={true}
+          initialScene={{ scene: EscenaARSaludos }}
+          // Pasamos el target seleccionado a la escena AR
+          viroAppProps={{ targetBuscado: targetActivo }}
+          style={styles.fullScreen}
+        />
+        <TouchableOpacity 
+          style={styles.closeButton} 
+          onPress={() => setMostrarRA(false)}
+        >
+          <Text style={styles.closeButtonText}>✕ Salir de Cámara</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Práctica 3D: Vocales</Text>
+        <Text style={styles.title}>Módulo de Saludos</Text>
+        <Text style={styles.subtitle}>Selecciona "Familia" para escanear tu tarjeta</Text>
       </View>
 
-      {/* Contenedor del Modelo 3D */}
-      <View style={styles.canvasContainer}>
-        <Canvas>
-          <ambientLight intensity={1.5} />
-          <directionalLight position={[10, 10, 10]} intensity={2} />
-          <directionalLight position={[-10, 10, -10]} intensity={1} />
-          <Suspense fallback={null}>
-            <ManoLSM letraActual={letra} />
-          </Suspense>
-        </Canvas>
-      </View>
-
-      {/* Botones de Control */}
-      <View style={styles.controls}>
-        {vocales.map((v) => (
+      <ScrollView contentContainerStyle={styles.menuGrid}>
+        {listaSaludos.map((saludo) => (
           <TouchableOpacity 
-            key={v} 
-            style={[styles.button, letra === v && styles.buttonActive]}
-            onPress={() => setLetra(v)}
+            key={saludo} 
+            style={[
+              styles.card, 
+              saludo === "Familia" && styles.cardActive 
+            ]} 
+            onPress={() => iniciarEscaneo(saludo)}
           >
-            <Text style={styles.buttonText}>{v}</Text>
+            <View style={styles.iconCircle}>
+              <Text style={styles.iconText}>{saludo.charAt(0)}</Text>
+            </View>
+            <Text style={styles.cardText}>{saludo}</Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0f172a' },
+  fullScreen: { flex: 1 },
   header: { paddingTop: 60, paddingBottom: 20, alignItems: 'center' },
-  title: { color: 'white', fontSize: 24, fontWeight: 'bold' },
-  canvasContainer: { flex: 1, backgroundColor: '#1e293b', margin: 16, borderRadius: 20, overflow: 'hidden' },
-  controls: { flexDirection: 'row', justifyContent: 'center', paddingBottom: 40, gap: 10 },
-  button: { backgroundColor: '#334155', width: 50, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center' },
-  buttonActive: { backgroundColor: '#22d3ee' },
-  buttonText: { color: 'white', fontSize: 20, fontWeight: 'bold' }
+  title: { color: 'white', fontSize: 26, fontWeight: 'bold' },
+  subtitle: { color: '#94a3b8', fontSize: 14, marginTop: 5 },
+  menuGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', padding: 15 },
+  card: { 
+    backgroundColor: '#1e293b', 
+    width: '48%', 
+    padding: 20, 
+    borderRadius: 20, 
+    alignItems: 'center', 
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#334155'
+  },
+  cardActive: { 
+    borderColor: '#22d3ee', 
+    borderWidth: 2,
+    backgroundColor: '#1e293b'
+  },
+  iconCircle: { 
+    width: 45, 
+    height: 45, 
+    borderRadius: 25, 
+    backgroundColor: '#334155', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginBottom: 10 
+  },
+  iconText: { color: '#22d3ee', fontWeight: 'bold', fontSize: 20 },
+  cardText: { color: 'white', fontSize: 14, fontWeight: '600' },
+  closeButton: { 
+    position: 'absolute', 
+    top: 50, 
+    alignSelf: 'center', 
+    backgroundColor: 'rgba(0,0,0,0.7)', 
+    padding: 12, 
+    borderRadius: 25 
+  },
+  closeButtonText: { color: 'white', fontWeight: 'bold' }
 });
