@@ -111,7 +111,7 @@ function MainTabs({ userProfile, updateUserProfile }: NavigationProps) {
           ),
         }}
       />
-      <Tab.Screen
+      {/* <Tab.Screen
         name="Perfil"
         options={{
           title: 'Perfil',
@@ -128,7 +128,7 @@ function MainTabs({ userProfile, updateUserProfile }: NavigationProps) {
             updateUserProfile={updateUserProfile}
           />
         )}
-      </Tab.Screen>
+      </Tab.Screen> */}
     </Tab.Navigator>
   );
 }

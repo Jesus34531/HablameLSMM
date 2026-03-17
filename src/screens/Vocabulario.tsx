@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Type, Palette, Squirrel,BookOpen } from 'lucide-react-native';
+import { Type, Palette,BookOpen,Dog ,CaseSensitive} from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../Navigation';
@@ -13,21 +13,21 @@ export default function Vocabulario() {
 
   const categorias = [
     {
-      id: 'letras',
-      icon: Type,
-      colors: ['#3b82f6', '#2563eb'] as [string, string],
+      id: 'Vocales',
+      icon: CaseSensitive,
+      colors: ['#0ea5e9', '#0369a1'] as [string, string],
       descripcion: 'Escanea las tarjetas del abecedario para ver las señas de cada letra en 3D',
     },
     {
       id: 'colores',
       icon: Palette,
-      colors: ['#06b6d4', '#0891b2'] as [string, string],
+      colors: ['#06b6d4', '#0e7490'] as [string, string],
       descripcion: 'Apunta tu cámara a las tarjetas de colores para aprender sus señas',
     },
     {
       id: 'animales',
-      icon: Squirrel,
-      colors: ['#0ea5e9', '#0284c7'] as [string, string],
+      icon: Dog,
+      colors: ['#a855f7', '#0284c7'] as [string, string],
       descripcion: 'Descubre cómo se representan los animales en lenguaje de señas',
     },
   ];

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Gamepad2, Brain, Shuffle, CircleHelp } from 'lucide-react-native';
+import { Gamepad2, Brain, CircleHelp ,CalendarDays} from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../Navigation';
@@ -16,8 +16,8 @@ export default function Juegos() {
     id: 'GameTribiaDias',
     title: 'Días de la Semana',
     description: '¿Puedes identificar el día correcto viendo solo la seña?',
-    icon: Shuffle,
-    colors: ['#f59e0b', '#d97706'] as const, // <--- AGREGA "as const" AQUÍ
+    icon: CalendarDays,
+    colors: ['#0ea5e9', '#0369a1'] as const, // <--- AGREGA "as const" AQUÍ
   },
   {
     id: 'GameMemorama',
@@ -31,7 +31,7 @@ export default function Juegos() {
     title: 'Adivina la Letra',
     description: 'Pon a prueba tu dominio del abecedario LSM',
     icon: CircleHelp, // <--- CORRECCIÓN: Usa CircleHelp aquí
-    colors: ['#0ea5e9', '#0369a1'] as const, // <--- AGREGA "as const" AQUÍ
+    colors: ['#0369a1', '#a855f7'] as const, // <--- AGREGA "as const" AQUÍ
   }
 ];
 
