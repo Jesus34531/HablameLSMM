@@ -15,6 +15,7 @@ import {
   Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   Play,
   User,
@@ -45,6 +46,7 @@ type UserProfile = {
   name: string;
   age: string;
   avatar: null | any;
+  avatarId: number | null;
 };
 
 const LEVELS: Level[] = [
@@ -118,17 +120,21 @@ const VOCALES = [
 //  👉 Reemplaza cada require con la ruta de tu imagen
 // ─────────────────────────────────────────────
 const AVATAR_OPTIONS = [
-  { id: 1, source:   require('../../assets/avatars/avatar_1.png')  },
-  { id: 2, source:   require('../../assets/avatars/avatar_2.png')  },
-  { id: 3, source:   require('../../assets/avatars/avatar_3.png')  },
-  { id: 4, source:   require('../../assets/avatars/avatar_4.png')  },
-  { id: 5, source:   require('../../assets/avatars/avatar_5.png')  },
-  { id: 6, source:   require('../../assets/avatars/avatar_6.png')  },
-  { id: 7, source:   require('../../assets/avatars/avatar_7.png')  },
-  { id: 8, source:   require('../../assets/avatars/avatar_8.png') },
-  { id: 9, source:   require('../../assets/avatars/avatar_9.png')  },
-  { id: 10, source:   require('../../assets/avatars/avatar_10.png')  },
+  { id: 1, source: null /* 👉 require('../../assets/avatars/avatar_1.png') */ },
+  { id: 2, source: null /* 👉 require('../../assets/avatars/avatar_2.png') */ },
+  { id: 3, source: null /* 👉 require('../../assets/avatars/avatar_3.png') */ },
+  { id: 4, source: null /* 👉 require('../../assets/avatars/avatar_4.png') */ },
+  { id: 5, source: null /* 👉 require('../../assets/avatars/avatar_5.png') */ },
+  { id: 6, source: null /* 👉 require('../../assets/avatars/avatar_6.png') */ },
+  { id: 7, source: null /* 👉 require('../../assets/avatars/avatar_7.png') */ },
+  { id: 8, source: null /* 👉 require('../../assets/avatars/avatar_8.png') */ },
+  { id: 9, source: null /* 👉 require('../../assets/avatars/avatar_9.png') */ },
+  { id: 10, source: null /* 👉 require('../../assets/avatars/avatar_10.png') */ },
 ];
+
+// Clave para AsyncStorage
+const STORAGE_KEY = '@hablamelsmm_perfil';
+const STORAGE_KEY_NIVELES = '@hablamelsmm_niveles';
 
 // ─────────────────────────────────────────────
 //  MODAL: SELECTOR DE AVATAR
@@ -166,7 +172,6 @@ function AvatarPickerModal({
                 {avatar.source ? (
                   <Image source={avatar.source} style={avatarPickerStyles.avatarOptionImg} />
                 ) : (
-                  // Placeholder mientras no hay imagen
                   <View style={avatarPickerStyles.avatarOptionPlaceholder}>
                     <Text style={avatarPickerStyles.avatarOptionNum}>{avatar.id}</Text>
                   </View>
@@ -203,8 +208,9 @@ function EditProfileScreen({
 }) {
   const [form, setForm] = useState<UserProfile>({ ...profile });
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [avatarPickerVisible, setAvatarPickerVisible] = useState(false);
-  const [selectedAvatarId, setSelectedAvatarId] = useState<number | null>(null);
+  const [selectedAvatarId, setSelectedAvatarId] = useState<number | null>(profile.avatarId ?? null);
   const slideAnim = useRef(new Animated.Value(50)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -215,8 +221,10 @@ function EditProfileScreen({
     ]).start();
   }, []);
 
-  const handleSave = () => {
-    onSave(form);
+  const handleSave = async () => {
+    setSaving(true);
+    await onSave(form);   // onSave ahora es async
+    setSaving(false);
     setSaved(true);
     setTimeout(() => {
       setSaved(false);
@@ -226,7 +234,7 @@ function EditProfileScreen({
 
   const handleAvatarSelect = (id: number, source: any) => {
     setSelectedAvatarId(id);
-    setForm(f => ({ ...f, avatar: source }));
+    setForm(f => ({ ...f, avatar: source, avatarId: id }));
     setAvatarPickerVisible(false);
   };
 
@@ -234,7 +242,7 @@ function EditProfileScreen({
     <Animated.View style={[editStyles.screen, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
 
-        {/* Header — solo título y botón atrás */}
+        {/* Header */}
         <LinearGradient colors={['#0f172a', '#1a2540']} style={editStyles.header}>
           <TouchableOpacity onPress={onBack} style={editStyles.backBtn}>
             <ArrowLeft size={20} color="#60a5fa" />
@@ -247,7 +255,7 @@ function EditProfileScreen({
           contentContainerStyle={editStyles.bodyContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Avatar — toca para abrir selector */}
+          {/* Avatar */}
           <View style={editStyles.avatarSection}>
             <TouchableOpacity
               style={editStyles.avatarWrap}
@@ -261,7 +269,6 @@ function EditProfileScreen({
                   <User size={42} color="#60a5fa" />
                 </View>
               )}
-              {/* Overlay de cámara */}
               <View style={editStyles.cameraOverlay}>
                 <Text style={editStyles.cameraOverlayText}>✎</Text>
               </View>
@@ -269,7 +276,7 @@ function EditProfileScreen({
             <Text style={editStyles.avatarHint}>Toca tu foto para elegir un avatar</Text>
           </View>
 
-          {/* Campos: solo Nombre y Edad */}
+          {/* Campos: Nombre y Edad */}
           <View style={editStyles.fieldsCard}>
             <View style={editStyles.fieldGroup}>
               <Text style={editStyles.fieldLabel}>Nombre</Text>
@@ -317,13 +324,20 @@ function EditProfileScreen({
             ))}
           </View>
 
-          {/* Botón Guardar abajo de los campos */}
+          {/* Botón Guardar */}
           <TouchableOpacity
-            style={[editStyles.saveButton, saved && editStyles.saveButtonDone]}
+            style={[
+              editStyles.saveButton,
+              saved && editStyles.saveButtonDone,
+              saving && editStyles.saveButtonSaving,
+            ]}
             onPress={handleSave}
+            disabled={saving || saved}
             activeOpacity={0.85}
           >
-            {saved ? (
+            {saving ? (
+              <Text style={editStyles.saveButtonText}>Guardando...</Text>
+            ) : saved ? (
               <>
                 <CheckCircle size={18} color="#fff" />
                 <Text style={editStyles.saveButtonText}>¡Guardado!</Text>
@@ -340,7 +354,6 @@ function EditProfileScreen({
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Modal selector de avatar */}
       <AvatarPickerModal
         visible={avatarPickerVisible}
         currentAvatarId={selectedAvatarId}
@@ -352,7 +365,7 @@ function EditProfileScreen({
 }
 
 // ─────────────────────────────────────────────
-//  TARJETA VOCAL  (Nivel 5)
+//  TARJETA VOCAL
 // ─────────────────────────────────────────────
 function VocalCard({ vocal, onComplete }: { vocal: typeof VOCALES[0]; onComplete: () => void }) {
   const [seconds, setSeconds] = useState(10);
@@ -377,18 +390,15 @@ function VocalCard({ vocal, onComplete }: { vocal: typeof VOCALES[0]; onComplete
         <Text style={vocalStyles.letter}>{vocal.letra}</Text>
       </View>
 
-      {/* 👉 IMAGEN DE SEÑA — reemplaza el placeholder con tu imagen:
+      {/* 👉 IMAGEN DE SEÑA — reemplaza con:
           <Image
-            source={require('../../assets/senas/seña_' + vocal.letra + '.png')}
+            source={require('../../assets/senas/seña_A.png')}
             style={vocalStyles.signImage}
             resizeMode="contain"
           />
       */}
       <View style={vocalStyles.imageSlot}>
         <Text style={vocalStyles.imagePlaceholder}>📷 Seña "{vocal.letra}"</Text>
-        <Text style={vocalStyles.imagePlaceholderHint}>
-          {/* 👉 Agrega aquí: require('../../assets/senas/seña_A.png') etc. */}
-        </Text>
       </View>
 
       <Text style={vocalStyles.description}>{vocal.descripcion}</Text>
@@ -446,15 +456,9 @@ function LevelModal({ level, onClose, onComplete }: { level: Level; onClose: () 
     <View style={modalStyles.overlay}>
       <TouchableOpacity style={modalStyles.backdrop} activeOpacity={1} onPress={handleClose} />
       <Animated.View style={[modalStyles.modal, { transform: [{ translateY: slideAnim }] }]}>
-
         <View style={modalStyles.handle} />
 
-        <LinearGradient
-          colors={level.gradientColors}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={modalStyles.header}
-        >
+        <LinearGradient colors={level.gradientColors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={modalStyles.header}>
           <Text style={modalStyles.headerEmoji}>{level.emoji}</Text>
           <View style={{ flex: 1 }}>
             <Text style={modalStyles.levelNum}>NIVEL {level.id}</Text>
@@ -466,16 +470,13 @@ function LevelModal({ level, onClose, onComplete }: { level: Level; onClose: () 
           </TouchableOpacity>
         </LinearGradient>
 
-        <ScrollView
-          style={modalStyles.body}
-          contentContainerStyle={modalStyles.bodyContent}
-          showsVerticalScrollIndicator={false}
-        >
+        <ScrollView style={modalStyles.body} contentContainerStyle={modalStyles.bodyContent} showsVerticalScrollIndicator={false}>
+
           {/* Mascota + diálogo */}
           <View style={modalStyles.dialogRow}>
             {/* 👉 IMAGEN MASCOTA — reemplaza con:
                 <Image
-                  source={require('../../assets/mascota/mascota_nivel_' + level.id + '.png')}
+                  source={require('../../assets/mascota/mascota_nivel_1.png')}
                   style={modalStyles.mascotImg}
                   resizeMode="contain"
                 />
@@ -489,7 +490,7 @@ function LevelModal({ level, onClose, onComplete }: { level: Level; onClose: () 
             </View>
           </View>
 
-          {/* ── Video (niveles 1-4) ── */}
+          {/* Video niveles 1-4 */}
           {level.type === 'video' && !levelDone && (
             <View style={modalStyles.videoSection}>
               <View style={[modalStyles.videoBox, { borderColor: level.accentColor + '55' }]}>
@@ -506,19 +507,17 @@ function LevelModal({ level, onClose, onComplete }: { level: Level; onClose: () 
                   </TouchableOpacity>
                 ) : (
                   <View style={modalStyles.videoActive}>
-                    {/* 👉 VIDEO NIVEL {level.id} — reemplaza con:
+                    {/* 👉 VIDEO NIVEL — reemplaza con:
                         <Video
                           style={{ width: '100%', height: '100%' }}
-                          source={{ uri: 'URL_VIDEO_NIVEL_' + level.id }}
-                          // O local: source={require('../../assets/videos/nivel_' + level.id + '.mp4')}
+                          source={require('../../assets/videos/nivel_1.mp4')}
                           useNativeControls
                           resizeMode="contain"
                           shouldPlay
                         />
                     */}
                     <Text style={modalStyles.videoActiveTxt}>
-                      🎬 Video Nivel {level.id}{'\n'}
-                      {/* 👉 Inserta aquí el componente Video */}
+                      🎬 Video Nivel {level.id}{'\n'}(inserta componente Video aquí)
                     </Text>
                   </View>
                 )}
@@ -534,7 +533,7 @@ function LevelModal({ level, onClose, onComplete }: { level: Level; onClose: () 
             </View>
           )}
 
-          {/* ── Vocales (nivel 5) ── */}
+          {/* Vocales nivel 5 */}
           {level.type === 'cards' && !levelDone && (
             <View style={modalStyles.vocalesWrap}>
               <Text style={modalStyles.vocalesProgress}>Vocal {vocalIndex + 1} de {VOCALES.length}</Text>
@@ -542,7 +541,7 @@ function LevelModal({ level, onClose, onComplete }: { level: Level; onClose: () 
             </View>
           )}
 
-          {/* ── Completado ── */}
+          {/* Completado */}
           {levelDone && (
             <View style={[modalStyles.completedBox, { borderColor: level.accentColor }]}>
               <Text style={modalStyles.completedStar}>⭐</Text>
@@ -577,11 +576,67 @@ export default function Home() {
   const [activeLevel, setActiveLevel] = useState<Level | null>(null);
   const [completedLevels, setCompletedLevels] = useState<number[]>([]);
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [cargando, setCargando] = useState(true);
   const [profile, setProfile] = useState<UserProfile>({
     name: 'Héroe',
     age: '',
     avatar: null,
+    avatarId: null,
   });
+
+  // ── Cargar datos guardados al iniciar ──
+  useEffect(() => {
+    const cargarDatos = async () => {
+      try {
+        // Cargar perfil
+        const perfilGuardado = await AsyncStorage.getItem(STORAGE_KEY);
+        if (perfilGuardado) {
+          const perfilParsed: UserProfile = JSON.parse(perfilGuardado);
+          // Restaurar la imagen del avatar según el id guardado
+          if (perfilParsed.avatarId !== null) {
+            const avatarEncontrado = AVATAR_OPTIONS.find(a => a.id === perfilParsed.avatarId);
+            if (avatarEncontrado) {
+              perfilParsed.avatar = avatarEncontrado.source;
+            }
+          }
+          setProfile(perfilParsed);
+        }
+
+        // Cargar niveles completados
+        const nivelesGuardados = await AsyncStorage.getItem(STORAGE_KEY_NIVELES);
+        if (nivelesGuardados) {
+          setCompletedLevels(JSON.parse(nivelesGuardados));
+        }
+      } catch (error) {
+        console.log('Error cargando datos:', error);
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    cargarDatos();
+  }, []);
+
+  // ── Guardar perfil en AsyncStorage ──
+  const guardarPerfil = async (p: UserProfile) => {
+    try {
+      // Guardamos el avatarId pero no el source (porque require() no es serializable)
+      const aGuardar = { ...p, avatar: null };
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(aGuardar));
+      setProfile(p); // sí mantenemos el source en memoria para que se vea la imagen
+    } catch (error) {
+      console.log('Error guardando perfil:', error);
+    }
+  };
+
+  // ── Guardar niveles completados ──
+  const guardarNiveles = async (niveles: number[]) => {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY_NIVELES, JSON.stringify(niveles));
+    } catch (error) {
+      console.log('Error guardando niveles:', error);
+    }
+  };
 
   const handleOpenLevel = (level: Level) => {
     if (level.id !== 1 && !completedLevels.includes(level.id - 1)) return;
@@ -590,18 +645,36 @@ export default function Home() {
 
   const handleLevelComplete = () => {
     if (!activeLevel) return;
-    setCompletedLevels(prev => prev.includes(activeLevel.id) ? prev : [...prev, activeLevel.id]);
+    if (!completedLevels.includes(activeLevel.id)) {
+      const nuevosNiveles = [...completedLevels, activeLevel.id];
+      setCompletedLevels(nuevosNiveles);
+      guardarNiveles(nuevosNiveles); // 💾 guardar progreso
+    }
     setActiveLevel(null);
   };
 
   const isUnlocked = (id: number) => id === 1 || completedLevels.includes(id - 1);
   const isCompleted = (id: number) => completedLevels.includes(id);
 
+  // Pantalla de carga mientras AsyncStorage lee los datos
+  if (cargando) {
+    return (
+      <View style={styles.loadingScreen}>
+        <Image
+          source={require('../../assets/Logo_Hablame_LSM.png')}
+          style={styles.loadingLogo}
+          resizeMode="contain"
+        />
+        <Text style={styles.loadingText}>Cargando...</Text>
+      </View>
+    );
+  }
+
   if (showEditProfile) {
     return (
       <EditProfileScreen
         profile={profile}
-        onSave={p => setProfile(p)}
+        onSave={guardarPerfil}
         onBack={() => setShowEditProfile(false)}
       />
     );
@@ -609,15 +682,10 @@ export default function Home() {
 
   return (
     <>
-      <ScrollView
-        style={styles.root}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView style={styles.root} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
-        {/* ── LOGO — se quitó el cuadro simulado, solo imagen real ── */}
+        {/* Logo */}
         <View style={styles.logoRow}>
-          {/* 👉 Tu logo ya está aquí */}
           <Image
             source={require('../../assets/Logo_Hablame_LSM.png')}
             style={styles.logoImg}
@@ -629,12 +697,8 @@ export default function Home() {
           </View>
         </View>
 
-        {/* ── PERFIL ── */}
-        <TouchableOpacity
-          style={styles.profileCard}
-          activeOpacity={0.82}
-          onPress={() => setShowEditProfile(true)}
-        >
+        {/* Perfil */}
+        <TouchableOpacity style={styles.profileCard} activeOpacity={0.82} onPress={() => setShowEditProfile(true)}>
           <LinearGradient
             colors={['rgba(96,165,250,0.16)', 'rgba(34,211,238,0.08)']}
             start={{ x: 0, y: 0 }}
@@ -670,7 +734,7 @@ export default function Home() {
           </LinearGradient>
         </TouchableOpacity>
 
-        {/* ── VIDEO TUTORIAL ── */}
+        {/* Video Tutorial */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Play size={18} color="#22d3ee" />
@@ -680,8 +744,7 @@ export default function Home() {
             {/* 👉 VIDEO TUTORIAL — reemplaza con:
                 <Video
                   style={{ width: '100%', height: '100%' }}
-                  source={{ uri: 'URL_VIDEO_TUTORIAL' }}
-                  // O local: source={require('../../assets/videos/tutorial.mp4')}
+                  source={require('../../assets/videos/tutorial.mp4')}
                   useNativeControls
                   resizeMode="contain"
                 />
@@ -696,7 +759,7 @@ export default function Home() {
           </View>
         </View>
 
-        {/* ── CAMINO DEL HÉROE ── */}
+        {/* Camino del Héroe */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Star size={18} color="#f59e0b" />
@@ -806,6 +869,10 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#070d1a' },
   content: { padding: 18, paddingTop: 56, gap: 20 },
 
+  loadingScreen: { flex: 1, backgroundColor: '#070d1a', justifyContent: 'center', alignItems: 'center', gap: 16 },
+  loadingLogo: { width: 90, height: 90 },
+  loadingText: { color: '#334155', fontSize: 14 },
+
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   logoImg: { width: 58, height: 58, borderRadius: 15 },
   appName: { color: '#e2e8f0', fontSize: 19, fontWeight: '800', letterSpacing: 0.3 },
@@ -853,7 +920,6 @@ const styles = StyleSheet.create({
   levelPillTxt: { fontSize: 11, fontWeight: '600' },
   donePill: { backgroundColor: 'rgba(34,197,94,0.16)', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
   donePillTxt: { color: '#22c55e', fontSize: 11, fontWeight: '600' },
-
   allDoneBanner: { borderRadius: 16, padding: 20, alignItems: 'center', gap: 6, borderWidth: 1, borderColor: 'rgba(245,158,11,0.28)', marginTop: 4 },
   allDoneTitle: { color: '#f59e0b', fontSize: 17, fontWeight: '800' },
   allDoneSub: { color: '#64748b', fontSize: 13, textAlign: 'center' },
@@ -918,7 +984,6 @@ const editStyles = StyleSheet.create({
   headerTitle: { flex: 1, color: '#f1f5f9', fontSize: 17, fontWeight: '700' },
   body: { flex: 1 },
   bodyContent: { padding: 22, gap: 22 },
-
   avatarSection: { alignItems: 'center', gap: 10 },
   avatarWrap: { position: 'relative' },
   avatarFallback: { width: 104, height: 104, borderRadius: 52, backgroundColor: 'rgba(96,165,250,0.1)', borderWidth: 2.5, borderColor: '#60a5fa', justifyContent: 'center', alignItems: 'center' },
@@ -926,22 +991,19 @@ const editStyles = StyleSheet.create({
   cameraOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 34, backgroundColor: 'rgba(0,0,0,0.55)', borderBottomLeftRadius: 52, borderBottomRightRadius: 52, justifyContent: 'center', alignItems: 'center' },
   cameraOverlayText: { color: '#fff', fontSize: 16 },
   avatarHint: { color: '#334155', fontSize: 12 },
-
   fieldsCard: { backgroundColor: 'rgba(15,23,42,0.9)', borderRadius: 20, padding: 18, gap: 14, borderWidth: 1, borderColor: 'rgba(96,165,250,0.1)' },
   fieldGroup: { gap: 6 },
   fieldLabel: { color: '#475569', fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' },
   input: { backgroundColor: 'rgba(7,13,26,0.8)', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(96,165,250,0.18)', color: '#f1f5f9', fontSize: 15, paddingHorizontal: 14, paddingVertical: 12 },
   divider: { height: 1, backgroundColor: 'rgba(96,165,250,0.08)' },
-
   statsRow: { flexDirection: 'row', backgroundColor: 'rgba(15,23,42,0.7)', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: 'rgba(96,165,250,0.08)', alignItems: 'center', justifyContent: 'space-around' },
   statBox: { alignItems: 'center', gap: 4, flex: 1 },
   statNum: { color: '#60a5fa', fontSize: 26, fontWeight: '800' },
   statLabel: { color: '#334155', fontSize: 10, textAlign: 'center', lineHeight: 14 },
   statDivider: { width: 1, height: 36, backgroundColor: 'rgba(96,165,250,0.1)' },
-
-  // Botón guardar abajo
   saveButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: '#3b82f6', borderRadius: 16, paddingVertical: 16, shadowColor: '#3b82f6', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.35, shadowRadius: 12, elevation: 6 },
   saveButtonDone: { backgroundColor: '#22c55e', shadowColor: '#22c55e' },
+  saveButtonSaving: { backgroundColor: '#1d4ed8', opacity: 0.8 },
   saveButtonText: { color: '#fff', fontWeight: '800', fontSize: 16 },
 });
 
@@ -975,7 +1037,6 @@ const vocalStyles = StyleSheet.create({
   letter: { color: '#f59e0b', fontSize: 34, fontWeight: '900' },
   imageSlot: { width: '100%', height: 160, borderRadius: 14, backgroundColor: 'rgba(20,30,50,0.8)', borderWidth: 1, borderColor: '#1e293b', justifyContent: 'center', alignItems: 'center', borderStyle: 'dashed' },
   imagePlaceholder: { color: '#334155', fontSize: 13 },
-  imagePlaceholderHint: { color: '#1e293b', fontSize: 10 },
   signImage: { width: '100%', height: '100%', borderRadius: 14 },
   description: { color: '#64748b', fontSize: 13, textAlign: 'center' },
   timerTrack: { width: '100%', height: 6, backgroundColor: '#1e293b', borderRadius: 3, overflow: 'hidden' },
