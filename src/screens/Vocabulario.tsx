@@ -13,7 +13,7 @@ export default function Vocabulario() {
 
   const categorias = [
     {
-      id: 'Vocales',
+      id: 'letras',
       icon: CaseSensitive,
       colors: ['#0ea5e9', '#0369a1'] as [string, string],
       descripcion: 'Escanea las tarjetas del abecedario para ver las señas de cada letra en 3D',

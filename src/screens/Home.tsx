@@ -300,7 +300,7 @@ function EditProfileScreen({
             </View>
           </View>
 
-          {/* Stats decorativos */}
+          {/* Stats decorativos 
           <View style={editStyles.statsRow}>
             {[
               { num: '0', label: 'Señas\naprendidas' },
@@ -316,6 +316,7 @@ function EditProfileScreen({
               </React.Fragment>
             ))}
           </View>
+          */}
 
           {/* Botón Guardar abajo de los campos */}
           <TouchableOpacity
@@ -624,7 +625,7 @@ export default function Home() {
             resizeMode="contain"
           />
           <View>
-            <Text style={styles.appName}>Háblame LSM</Text>
+            <Text style={styles.appName}>SeñApp</Text>
             <Text style={styles.appTagline}>Lenguaje de Señas Mexicano</Text>
           </View>
         </View>

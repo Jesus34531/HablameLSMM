@@ -5,7 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 
 // Importamos la navegación y el Login
 import Navigation from './src/Navigation';
-import Login from './src/screens/Login';
+import Login from './src/screens/Welcome';
 
 // --- DEFINICIÓN DE TIPOS (Importante para que no de error en otros archivos) ---
 export interface UserStats {
