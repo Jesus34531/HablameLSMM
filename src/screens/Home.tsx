@@ -13,6 +13,7 @@ import {
   Platform,
   Dimensions,
   Modal,
+  Keyboard,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
@@ -26,6 +27,8 @@ import {
   Save,
   RotateCcw,
 } from 'lucide-react-native';
+
+import { Video, ResizeMode, } from 'expo-av';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -216,6 +219,7 @@ function EditProfileScreen({
   }, []);
 
   const handleSave = () => {
+    Keyboard.dismiss();
     onSave(form);
     setSaved(true);
     setTimeout(() => {
@@ -579,7 +583,7 @@ export default function Home() {
   const [completedLevels, setCompletedLevels] = useState<number[]>([]);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [profile, setProfile] = useState<UserProfile>({
-    name: 'Héroe',
+    name: '',
     age: '',
     avatar: null,
   });
@@ -620,7 +624,7 @@ export default function Home() {
         <View style={styles.logoRow}>
           {/* 👉 Tu logo ya está aquí */}
           <Image
-            source={require('../../assets/Logo_Hablame_LSM.png')}
+            source={require('../../assets/Logo_SeñApp_2.png')}
             style={styles.logoImg}
             resizeMode="contain"
           />
@@ -655,7 +659,7 @@ export default function Home() {
               </View>
               <View style={{ marginLeft: 14 }}>
                 <Text style={styles.greeting}>¡Bienvenido de nuevo,</Text>
-                <Text style={styles.profileName}>{profile.name}! 👋</Text>
+                <Text style={styles.profileName}>{profile.name} </Text>
                 {profile.age ? (
                   <Text style={styles.profileAge}>{profile.age} años</Text>
                 ) : null}
@@ -672,28 +676,21 @@ export default function Home() {
         </TouchableOpacity>
 
         {/* ── VIDEO TUTORIAL ── */}
+        {/* ── VIDEO TUTORIAL ── */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Play size={18} color="#22d3ee" />
             <Text style={styles.sectionTitle}>Video Tutorial</Text>
           </View>
+
           <View style={styles.tutorialBox}>
-            {/* 👉 VIDEO TUTORIAL — reemplaza con:
-                <Video
-                  style={{ width: '100%', height: '100%' }}
-                  source={{ uri: 'URL_VIDEO_TUTORIAL' }}
-                  // O local: source={require('../../assets/videos/tutorial.mp4')}
-                  useNativeControls
-                  resizeMode="contain"
-                />
-            */}
-            <View style={styles.tutorialPlaceholder}>
-              <View style={styles.tutorialPlayBtn}>
-                <Play size={36} color="#fff" />
-              </View>
-              <Text style={styles.tutorialLabel}>Cómo usar la aplicación</Text>
-              <Text style={styles.tutorialSub}>Toca para reproducir</Text>
-            </View>
+            <Video
+             
+              style={{ width: '100%', height: '100%' }}
+              source={require('../../assets/videos/tutorial.mp4')}
+              useNativeControls
+              resizeMode={ResizeMode.CONTAIN}
+            />
           </View>
         </View>
 
@@ -983,5 +980,5 @@ const vocalStyles = StyleSheet.create({
   timerFill: { height: '100%', backgroundColor: '#f59e0b', borderRadius: 3 },
   timerText: { color: '#f59e0b', fontSize: 13, fontWeight: '700' },
   nextBtn: { backgroundColor: 'rgba(245,158,11,0.15)', borderRadius: 20, paddingHorizontal: 24, paddingVertical: 10, borderWidth: 1, borderColor: 'rgba(245,158,11,0.35)' },
-  nextBtnText: { color: '#f59e0b', fontWeight: '700', fontSize: 14 },
-});
+  nextBtnText: { color: '#f59e0b', fontWeight: '700', fontSize: 14 },})
+

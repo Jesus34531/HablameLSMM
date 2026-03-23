@@ -30,12 +30,7 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
 
-interface NavigationProps {
-  userProfile: UserProfile;
-  updateUserProfile: (updates: Partial<UserProfile>) => void;
-}
-
-function MainTabs({ userProfile, updateUserProfile }: NavigationProps) {
+function MainTabs() {
   return (
     <Tab.Navigator
       screenOptions={{
@@ -107,36 +102,27 @@ function MainTabs({ userProfile, updateUserProfile }: NavigationProps) {
   );
 }
 
+// ── WelcomeScreen separado como componente nombrado ──
+// Recibe navigation directamente como prop del Stack
+function WelcomeScreen({ navigation }: any) {
+  return <Welcome onLogin={() => navigation.replace('MainTabs')} />;
+}
+
+interface NavigationProps {
+  userProfile: UserProfile;
+  updateUserProfile: (updates: Partial<UserProfile>) => void;
+}
+
 export default function Navigation({ userProfile, updateUserProfile }: NavigationProps) {
   return (
     <NavigationContainer>
-      {/*
-        ✅ FIX DEL DOBLE TOQUE:
-        Todas las screens están siempre montadas en el Stack desde el inicio.
-        Welcome usa navigation.replace('MainTabs') para ir directo en 1 toque.
-        NO se usa useState condicional que forzaba un re-render intermedio.
-      */}
       <Stack.Navigator
         initialRouteName="Welcome"
         screenOptions={{ headerShown: false }}
       >
-        <Stack.Screen name="Welcome">
-          {(props) => (
-            <Welcome
-              onLogin={() => props.navigation.replace('MainTabs')}
-            />
-          )}
-        </Stack.Screen>
-
-        <Stack.Screen name="MainTabs">
-          {() => (
-            <MainTabs
-              userProfile={userProfile}
-              updateUserProfile={updateUserProfile}
-            />
-          )}
-        </Stack.Screen>
-
+        {/* ✅ component= en lugar de children como función */}
+        <Stack.Screen name="Welcome" component={WelcomeScreen} />
+        <Stack.Screen name="MainTabs" component={MainTabs} />
         <Stack.Screen
           name="SelectorSeñas"
           component={SelectorSeñas}

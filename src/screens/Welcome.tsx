@@ -55,7 +55,7 @@ export default function Welcome({ onLogin }: WelcomeProps) {
         ]}
       >
         <Image
-          source={require('../../assets/Logo_Hablame_LSM.png')}
+          source={require('../../assets/Logo_SeñApp_2.png')}
           style={styles.logoImage}
           resizeMode="contain"
         />
@@ -63,7 +63,7 @@ export default function Welcome({ onLogin }: WelcomeProps) {
 
       {/* ── TEXTOS ── */}
       <Animated.View style={[styles.textArea, { opacity: textAnim }]}>
-        <Text style={styles.appName}>HablaméLSM</Text>
+        <Text style={styles.appName}>SeñApp</Text>
         <Text style={styles.tagline}>Lengua de Señas Mexicana</Text>
         <Text style={styles.desc}>
           ¿Listo para jugar y aprender{'\n'}señas de manera divertida?
@@ -84,12 +84,12 @@ export default function Welcome({ onLogin }: WelcomeProps) {
             style={styles.btnGradient}
           >
             <Text style={styles.btnText}>¡ENTRAR!</Text>
-            <ArrowRight color="#fff" size={22} strokeWidth={2.5} />
+            
           </LinearGradient>
         </TouchableOpacity>
       </Animated.View>
 
-      <Text style={styles.version}>v1.0</Text>
+      
     </LinearGradient>
   );
 }
