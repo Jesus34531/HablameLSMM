@@ -1,0 +1,472 @@
+import React, { useState, useCallback } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Alert,
+  StatusBar,
+  SafeAreaView,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import {
+  ViroARImageMarker,
+  ViroARScene,
+  ViroARSceneNavigator,
+  ViroARTrackingTargets,
+  ViroVideo,
+} from '@reactvision/react-viro';
+
+// ─────────────────────────────────────────────
+//  1. CONFIGURACIÓN DE TARGETS AR
+//  👉 Para agregar más señas:
+//     1. Agrega la imagen de la tarjeta en: HablameLSMM\assets\videos\<nombre>.png
+//     2. Agrega el video en:               HablameLSMM\assets\videos\<nombre>.mp4
+//     3. Crea un nuevo target aquí con el mismo patrón
+//     4. Agrega la seña en LISTA_SALUDOS con disponible: true
+// ─────────────────────────────────────────────
+ViroARTrackingTargets.createTargets({
+  "hola_target": {
+    source: require('../../assets/videos/imagen1.png'), // 👉 Reemplaza con la imagen de la tarjeta de "Hola"
+    orientation: "Up",
+    physicalWidth: 0.1,
+  },
+  // ── Agrega más targets aquí siguiendo el mismo patrón ──
+  // "como_estas_target": {
+  //   source: require('../../assets/videos/como_estas_card.png'),
+  //   orientation: "Up",
+  //   physicalWidth: 0.1,
+  // },
+  // "buenos_dias_target": {
+  //   source: require('../../assets/videos/buenos_dias_card.png'),
+  //   orientation: "Up",
+  //   physicalWidth: 0.1,
+  // },
+});
+
+// ─────────────────────────────────────────────
+//  2. LISTA DE SEÑAS
+//  disponible: true  → abre la cámara AR
+//  disponible: false → muestra alerta "próximamente"
+//  👉 Para activar una seña: cambia disponible a true y
+//     asegúrate de tener su target y video registrados
+// ─────────────────────────────────────────────
+type Saludo = {
+  nombre: string;
+  emoji: string;
+  target: string;
+  video: any;
+  disponible: boolean;
+};
+
+const LISTA_SALUDOS: Saludo[] = [
+  {
+    nombre: 'Hola',
+    emoji: '👋',
+    target: 'hola_target',
+    video: require('../../assets/videos/hola.mp4'),
+    disponible: true,
+  },
+  {
+    nombre: 'Como estas',
+    emoji: '🤝',
+    target: 'como_estas_target',
+    video: null, // 👉 Reemplaza con: require('../../assets/videos/como_estas.mp4')
+    disponible: false,
+  },
+  {
+    nombre: 'Buenos dias',
+    emoji: '🌅',
+    target: 'buenos_dias_target',
+    video: null, // 👉 Reemplaza con: require('../../assets/videos/buenos_dias.mp4')
+    disponible: false,
+  },
+  {
+    nombre: 'Buenas tardes',
+    emoji: '🌇',
+    target: 'buenas_tardes_target',
+    video: null, // 👉 Reemplaza con: require('../../assets/videos/buenas_tardes.mp4')
+    disponible: false,
+  },
+  {
+    nombre: 'Buenas noches',
+    emoji: '🌙',
+    target: 'buenas_noches_target',
+    video: null, // 👉 Reemplaza con: require('../../assets/videos/buenas_noches.mp4')
+    disponible: false,
+  },
+  {
+    nombre: 'Bien',
+    emoji: '😊',
+    target: 'bien_target',
+    video: null, // 👉 Reemplaza con: require('../../assets/videos/bien.mp4')
+    disponible: false,
+  },
+  {
+    nombre: 'Mal',
+    emoji: '😔',
+    target: 'mal_target',
+    video: null, // 👉 Reemplaza con: require('../../assets/videos/mal.mp4')
+    disponible: false,
+  },
+  {
+    nombre: 'Gracias',
+    emoji: '🙏',
+    target: 'gracias_target',
+    video: null, // 👉 Reemplaza con: require('../../assets/videos/gracias.mp4')
+    disponible: false,
+  },
+  {
+    nombre: 'Nos vemos',
+    emoji: '👀',
+    target: 'nos_vemos_target',
+    video: null, // 👉 Reemplaza con: require('../../assets/videos/nos_vemos.mp4')
+    disponible: false,
+  },
+  {
+    nombre: 'Que haces',
+    emoji: '🤔',
+    target: 'que_haces_target',
+    video: null, // 👉 Reemplaza con: require('../../assets/videos/que_haces.mp4')
+    disponible: false,
+  },
+];
+
+// ─────────────────────────────────────────────
+//  3. ESCENA AR — estable y sin colapsos
+// ─────────────────────────────────────────────
+const EscenaAR = ({ arSceneNavigator }: any) => {
+  const { targetActivo, videoSource } = arSceneNavigator.viroAppProps;
+
+  return (
+    <ViroARScene>
+      <ViroARImageMarker target={targetActivo}>
+        <ViroVideo
+          source={videoSource}
+          loop={true}
+          position={[0, 0, 0]}
+          rotation={[-90, 0, 0]}
+          scale={[0.1, 0.1, 0]}
+        />
+      </ViroARImageMarker>
+    </ViroARScene>
+  );
+};
+
+// ─────────────────────────────────────────────
+//  4. COMPONENTE PRINCIPAL
+// ─────────────────────────────────────────────
+export default function AprendizajeSaludos() {
+  const [saludoActivo, setSaludoActivo] = useState<Saludo | null>(null);
+
+  // Salida segura: desmontamos el navigator antes de limpiar el estado
+  const handleSalir = useCallback(() => {
+    setSaludoActivo(null);
+  }, []);
+
+  const iniciarEscaneo = (saludo: Saludo) => {
+    if (!saludo.disponible) {
+      Alert.alert(
+        '🔜 Próximamente',
+        `La tarjeta para "${saludo.nombre}" estará disponible pronto.`,
+        [{ text: 'Entendido', style: 'cancel' }]
+      );
+      return;
+    }
+    setSaludoActivo(saludo);
+  };
+
+  // ── VISTA AR ──
+  if (saludoActivo) {
+    return (
+      <View style={styles.fullScreen}>
+        <StatusBar hidden />
+        <ViroARSceneNavigator
+          autofocus={true}
+          initialScene={{ scene: EscenaAR }}
+          viroAppProps={{
+            targetActivo: saludoActivo.target,
+            videoSource: saludoActivo.video,
+          }}
+          style={styles.fullScreen}
+        />
+
+        {/* Overlay superior con info */}
+        <View style={styles.arOverlayTop}>
+          <View style={styles.arInfoPill}>
+            <Text style={styles.arInfoEmoji}>{saludoActivo.emoji}</Text>
+            <Text style={styles.arInfoText}>{saludoActivo.nombre}</Text>
+          </View>
+        </View>
+
+        {/* Instrucción de escaneo */}
+        <View style={styles.arOverlayMiddle} pointerEvents="none">
+          <View style={styles.scanFrame}>
+            <View style={[styles.scanCorner, styles.scanTL]} />
+            <View style={[styles.scanCorner, styles.scanTR]} />
+            <View style={[styles.scanCorner, styles.scanBL]} />
+            <View style={[styles.scanCorner, styles.scanBR]} />
+          </View>
+          <Text style={styles.scanHint}>Apunta la cámara hacia la tarjeta</Text>
+        </View>
+
+        {/* Botón de salida — siempre accesible */}
+        <View style={styles.arOverlayBottom}>
+          <TouchableOpacity
+            style={styles.exitBtn}
+            onPress={handleSalir}
+            activeOpacity={0.85}
+          >
+            <LinearGradient
+              colors={['#06b6d4', '#0e7490']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.exitBtnGradient}
+            >
+              <Text style={styles.exitBtnText}>✕  Salir de cámara</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
+  // ── MENÚ PRINCIPAL ──
+  return (
+    <SafeAreaView style={styles.root}>
+      <StatusBar barStyle="light-content" backgroundColor="#070d1a" />
+
+      {/* Header */}
+      <LinearGradient
+        colors={['#06b6d4', '#0e7490']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
+        <Text style={styles.headerEmoji}>🤟</Text>
+        <View>
+          <Text style={styles.headerTitle}>Módulo de Saludos</Text>
+          <Text style={styles.headerSub}>Escanea una tarjeta para ver la seña</Text>
+        </View>
+      </LinearGradient>
+
+      {/* Badge disponibilidad */}
+      <View style={styles.availBadgeRow}>
+        <View style={styles.availBadge}>
+          <View style={styles.availDot} />
+          <Text style={styles.availText}>
+            {LISTA_SALUDOS.filter(s => s.disponible).length} de {LISTA_SALUDOS.length} señas disponibles
+          </Text>
+        </View>
+      </View>
+
+      {/* Grid de tarjetas */}
+      <ScrollView
+        contentContainerStyle={styles.grid}
+        showsVerticalScrollIndicator={false}
+      >
+        {LISTA_SALUDOS.map((saludo) => (
+          <TouchableOpacity
+            key={saludo.nombre}
+            activeOpacity={saludo.disponible ? 0.75 : 0.9}
+            onPress={() => iniciarEscaneo(saludo)}
+            style={styles.cardWrap}
+          >
+            {saludo.disponible ? (
+              <LinearGradient
+                colors={['#06b6d4', '#0e7490']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.card}
+              >
+                <Text style={styles.cardEmoji}>{saludo.emoji}</Text>
+                <Text style={styles.cardName}>{saludo.nombre}</Text>
+                <View style={styles.cardScanPill}>
+                  <Text style={styles.cardScanText}>📷 Escanear</Text>
+                </View>
+              </LinearGradient>
+            ) : (
+              <View style={styles.cardLocked}>
+                <Text style={[styles.cardEmoji, styles.cardEmojiDim]}>{saludo.emoji}</Text>
+                <Text style={styles.cardNameDim}>{saludo.nombre}</Text>
+                <View style={styles.cardLockPill}>
+                  <Text style={styles.cardLockText}>🔜 Próximo</Text>
+                </View>
+              </View>
+            )}
+          </TouchableOpacity>
+        ))}
+
+        <View style={{ height: 32 }} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  ESTILOS
+// ─────────────────────────────────────────────
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: '#070d1a' },
+  fullScreen: { flex: 1, backgroundColor: '#000' },
+
+  // Header
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 18,
+  },
+  headerEmoji: { fontSize: 36 },
+  headerTitle: { color: '#fff', fontSize: 20, fontWeight: '800' },
+  headerSub: { color: 'rgba(255,255,255,0.7)', fontSize: 12, marginTop: 2 },
+
+  // Badge
+  availBadgeRow: { paddingHorizontal: 18, paddingVertical: 10 },
+  availBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    backgroundColor: 'rgba(6,182,212,0.1)',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: 'rgba(6,182,212,0.25)',
+  },
+  availDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#22d3ee' },
+  availText: { color: '#22d3ee', fontSize: 12, fontWeight: '600' },
+
+  // Grid
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 14,
+    gap: 12,
+  },
+  cardWrap: { width: '47%' },
+
+  // Tarjeta disponible (gradiente)
+  card: {
+    borderRadius: 20,
+    padding: 18,
+    alignItems: 'center',
+    gap: 8,
+    minHeight: 130,
+    justifyContent: 'center',
+  },
+  cardEmoji: { fontSize: 32 },
+  cardName: { color: '#fff', fontSize: 15, fontWeight: '700', textAlign: 'center' },
+  cardScanPill: {
+    marginTop: 4,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  cardScanText: { color: '#fff', fontSize: 11, fontWeight: '600' },
+
+  // Tarjeta bloqueada
+  cardLocked: {
+    borderRadius: 20,
+    padding: 18,
+    alignItems: 'center',
+    gap: 8,
+    minHeight: 130,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(30,41,59,0.8)',
+    borderWidth: 1,
+    borderColor: 'rgba(51,65,85,0.6)',
+  },
+  cardEmojiDim: { opacity: 0.35 },
+  cardNameDim: { color: '#475569', fontSize: 15, fontWeight: '700', textAlign: 'center' },
+  cardLockPill: {
+    marginTop: 4,
+    backgroundColor: 'rgba(51,65,85,0.6)',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  cardLockText: { color: '#64748b', fontSize: 11, fontWeight: '600' },
+
+  // ── Overlays AR ──
+  arOverlayTop: {
+    position: 'absolute',
+    top: 52,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  arInfoPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(0,0,0,0.65)',
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: 'rgba(6,182,212,0.4)',
+  },
+  arInfoEmoji: { fontSize: 18 },
+  arInfoText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+
+  arOverlayMiddle: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 5,
+  },
+  scanFrame: {
+    width: 220,
+    height: 220,
+    position: 'relative',
+  },
+  scanCorner: {
+    position: 'absolute',
+    width: 28,
+    height: 28,
+    borderColor: '#06b6d4',
+  },
+  scanTL: { top: 0, left: 0, borderTopWidth: 3, borderLeftWidth: 3, borderTopLeftRadius: 6 },
+  scanTR: { top: 0, right: 0, borderTopWidth: 3, borderRightWidth: 3, borderTopRightRadius: 6 },
+  scanBL: { bottom: 0, left: 0, borderBottomWidth: 3, borderLeftWidth: 3, borderBottomLeftRadius: 6 },
+  scanBR: { bottom: 0, right: 0, borderBottomWidth: 3, borderRightWidth: 3, borderBottomRightRadius: 6 },
+  scanHint: {
+    color: 'rgba(255,255,255,0.75)',
+    fontSize: 13,
+    marginTop: 18,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+
+  arOverlayBottom: {
+    position: 'absolute',
+    bottom: 44,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  exitBtn: {
+    borderRadius: 30,
+    overflow: 'hidden',
+    shadowColor: '#06b6d4',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.45,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  exitBtnGradient: {
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 30,
+  },
+  exitBtnText: { color: '#fff', fontWeight: '800', fontSize: 16 },
+});

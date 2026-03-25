@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -476,23 +477,16 @@ function LevelModal({ level, onClose, onComplete }: { level: Level; onClose: () 
           contentContainerStyle={modalStyles.bodyContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Mascota + diálogo */}
-          <View style={modalStyles.dialogRow}>
-            {/* 👉 IMAGEN MASCOTA — reemplaza con:
-                <Image
-                  source={require('../../assets/mascota/mascota_nivel_' + level.id + '.png')}
-                  style={modalStyles.mascotImg}
-                  resizeMode="contain"
-                />
-            */}
-            <View style={[modalStyles.mascotPlaceholder, { borderColor: level.accentColor }]}>
-              <Text style={modalStyles.mascotIcon}>🧑‍🦱</Text>
-              <Text style={modalStyles.mascotLabel}>Mascota</Text>
-            </View>
+          
+            <Image
+              source={require('../../assets/mascota/perro_mascota.png')}
+              style={modalStyles.mascotImg}
+              resizeMode="contain"
+            />
             <View style={[modalStyles.bubble, { borderColor: level.accentColor + '77' }]}>
               <Text style={modalStyles.bubbleText}>"{level.dialog}"</Text>
             </View>
-          </View>
+          
 
           {/* ── Video (niveles 1-4) ── */}
           {level.type === 'video' && !levelDone && (
@@ -588,6 +582,65 @@ export default function Home() {
     avatar: null,
   });
 
+  // 1. CARGAR DATOS AL INICIAR LA APP
+  useEffect(() => {
+    const cargarDatos = async () => {
+      try {
+        const datosGuardados = await AsyncStorage.getItem('@perfil_usuario');
+        if (datosGuardados !== null) {
+          const usuario = JSON.parse(datosGuardados);
+          
+          // Buscamos la imagen del avatar basándonos en el ID guardado
+          let avatarSource = null;
+          if (usuario.avatarId) {
+            const avatarEncontrado = AVATAR_OPTIONS.find(a => a.id === usuario.avatarId);
+            if (avatarEncontrado) {
+              avatarSource = avatarEncontrado.source;
+            }
+          }
+
+          setProfile({
+            name: usuario.name || '',
+            age: usuario.age || '',
+            avatar: avatarSource,
+          });
+        }
+      } catch (error) {
+        console.error('Error al cargar el perfil:', error);
+      }
+    };
+
+    cargarDatos();
+  }, []);
+
+  // 2. FUNCIÓN PARA GUARDAR DATOS
+  const handleSaveProfile = async (nuevoPerfil: UserProfile) => {
+    // Actualizamos la pantalla inmediatamente
+    setProfile(nuevoPerfil);
+    
+    try {
+      // Buscamos qué ID de avatar eligió para poder guardarlo como número
+      let avatarIdParaGuardar = null;
+      if (nuevoPerfil.avatar) {
+        const avatarEncontrado = AVATAR_OPTIONS.find(a => a.source === nuevoPerfil.avatar);
+        if (avatarEncontrado) {
+          avatarIdParaGuardar = avatarEncontrado.id;
+        }
+      }
+
+      const datosParaGuardar = {
+        name: nuevoPerfil.name,
+        age: nuevoPerfil.age,
+        avatarId: avatarIdParaGuardar
+      };
+
+      await AsyncStorage.setItem('@perfil_usuario', JSON.stringify(datosParaGuardar));
+      console.log('¡Perfil guardado en AsyncStorage!');
+    } catch (error) {
+      console.error('Error al guardar el perfil:', error);
+    }
+  };
+
   const handleOpenLevel = (level: Level) => {
     if (level.id !== 1 && !completedLevels.includes(level.id - 1)) return;
     setActiveLevel(level);
@@ -606,7 +659,8 @@ export default function Home() {
     return (
       <EditProfileScreen
         profile={profile}
-        onSave={p => setProfile(p)}
+        // 👉 AQUÍ USAMOS LA NUEVA FUNCIÓN
+        onSave={handleSaveProfile} 
         onBack={() => setShowEditProfile(false)}
       />
     );
@@ -624,7 +678,7 @@ export default function Home() {
         <View style={styles.logoRow}>
           {/* 👉 Tu logo ya está aquí */}
           <Image
-            source={require('../../assets/Logo_SeñApp_2.png')}
+            source={require('../../assets/logo_senapp_2.png')}
             style={styles.logoImg}
             resizeMode="contain"
           />
@@ -676,18 +730,20 @@ export default function Home() {
         </TouchableOpacity>
 
         {/* ── VIDEO TUTORIAL ── */}
-        {/* ── VIDEO TUTORIAL ── */}
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Play size={18} color="#22d3ee" />
-            <Text style={styles.sectionTitle}>Video Tutorial</Text>
-          </View>
+          <View style={styles.tutorialCard}>
+            {/* Header integrado */}
+            <View style={styles.tutorialHeader}>
+              <View style={styles.tutorialIconWrap}>
+                <Play size={14} color="#22d3ee" />
+              </View>
+              <Text style={styles.tutorialHeaderTitle}>Video Tutorial</Text>
+            </View>
 
-          <View style={styles.tutorialBox}>
+            {/* Video a pantalla completa dentro de la tarjeta */}
             <Video
-             
-              style={{ width: '100%', height: '100%' }}
-              source={require('../../assets/videos/tutorial.mp4')}
+              style={{ width: '100%', height: 220 }}
+              source={require('../../assets/videos/introduccion_1.mp4')}
               useNativeControls
               resizeMode={ResizeMode.CONTAIN}
             />
@@ -855,6 +911,37 @@ const styles = StyleSheet.create({
   allDoneBanner: { borderRadius: 16, padding: 20, alignItems: 'center', gap: 6, borderWidth: 1, borderColor: 'rgba(245,158,11,0.28)', marginTop: 4 },
   allDoneTitle: { color: '#f59e0b', fontSize: 17, fontWeight: '800' },
   allDoneSub: { color: '#64748b', fontSize: 13, textAlign: 'center' },
+  tutorialCard: {
+  borderRadius: 16,
+  overflow: 'hidden',
+  borderWidth: 1.5,
+  borderColor: 'rgba(34,211,238,0.25)',
+  backgroundColor: '#0b1526',
+},
+tutorialHeader: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 8,
+  paddingHorizontal: 14,
+  paddingVertical: 10,
+  backgroundColor: 'rgba(7,13,26,0.9)',
+  borderBottomWidth: 1,
+  borderBottomColor: 'rgba(34,211,238,0.15)',
+},
+tutorialIconWrap: {
+  width: 26,
+  height: 26,
+  borderRadius: 8,
+  backgroundColor: 'rgba(34,211,238,0.15)',
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+tutorialHeaderTitle: {
+  color: '#f1f5f9',
+  fontSize: 15,
+  fontWeight: '700',
+},
+
 });
 
 // ─────────────────────────────────────────────

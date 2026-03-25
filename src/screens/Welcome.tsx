@@ -55,7 +55,7 @@ export default function Welcome({ onLogin }: WelcomeProps) {
         ]}
       >
         <Image
-          source={require('../../assets/Logo_SeñApp_2.png')}
+          source={require('../../assets/logo_senapp_2.png')}
           style={styles.logoImage}
           resizeMode="contain"
         />

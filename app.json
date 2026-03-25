@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "Hablame LSMM",
+    "name": "SeñApp",
     "slug": "HablameLSMM",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/Logo_Hablame_LSM.png",
+    "icon": "./assets/logo_senapp_2.png",
     "scheme": "hablamelsmm",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -20,7 +20,7 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/Logo_SeñApp_2.png"
+        "foregroundImage": "./assets/logo_senapp_2.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -35,7 +35,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/Logo_SeñApp_2.png",
+          "image": "./assets/logo_senapp_2.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
