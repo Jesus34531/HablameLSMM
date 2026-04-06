@@ -1,53 +1,50 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
+// theme.ts — importa esto en todos tus componentes
 
-import { Platform } from 'react-native';
+export const theme = {
+  colors: {
+    // Fondos
+    background:     '#FFF8F0',   // crema cálido (reemplaza #070d1a)
+    surface:        '#FFFFFF',   // tarjetas blancas
+    surfaceAlt:     '#F0F4FF',   // tarjetas secundarias (azul muy suave)
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+    // Texto (alto contraste sobre fondo claro)
+    textPrimary:    '#2D2D2D',   // reemplaza #f1f5f9
+    textSecondary:  '#555555',   // reemplaza #94a3b8
+    textMuted:      '#888888',   // reemplaza #475569
 
-export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    // Colores de acento por nivel (pasteles vivos, no neón)
+    level1:         '#FF7043',   // coral (reemplaza #f97316)
+    level2:         '#AB47BC',   // violeta (reemplaza #a855f7)
+    level3:         '#00ACC1',   // turquesa (reemplaza #06b6d4)
+    level4:         '#43A047',   // verde (reemplaza #22c55e)
+    level5:         '#FFA726',   // ámbar (reemplaza #f59e0b)
+
+    // UI
+    border:         'rgba(0,0,0,0.12)',
+    success:        '#43A047',
+    white:          '#FFFFFF',
   },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+
+  typography: {
+    // Familia — ver Paso 2 para instalar Nunito
+    fontFamily: 'Nunito_700Bold', // para títulos
+    fontFamilyRegular: 'Nunito_400Regular',
+    fontFamilySemiBold: 'Nunito_600SemiBold',
+
+    // Tamaños (más grandes que tu versión actual)
+    xs:   13,
+    sm:   15,
+    base: 17,
+    lg:   20,
+    xl:   24,
+    xxl:  30,
+  },
+
+  spacing: {
+    xs: 6, sm: 10, md: 16, lg: 22, xl: 32,
+  },
+
+  radius: {
+    sm: 10, md: 16, lg: 22, pill: 50,
   },
 };
-
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});

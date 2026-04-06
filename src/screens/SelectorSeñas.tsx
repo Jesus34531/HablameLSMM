@@ -12,9 +12,9 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 // Cuando agregues animales o colores, actualiza aquí también
 // ============================================================
 const CATEGORIAS: Record<string, { label: string; señas: string[]; colors: [string, string] }> = {
-  letras: {
+  vocales: {
     label: 'Vocales',
-    señas: ['Logo','A', 'E', 'I', 'O', 'U'],
+    señas: ['A', 'E', 'I', 'O', 'U'],
     colors: ['#3b82f6', '#2563eb'],
   },
   // colores: {

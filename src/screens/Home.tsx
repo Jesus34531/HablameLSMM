@@ -28,11 +28,65 @@ import {
   Save,
   RotateCcw,
 } from 'lucide-react-native';
-
-import { Video, ResizeMode, } from 'expo-av';
+import { Video, ResizeMode } from 'expo-av';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
+// ─────────────────────────────────────────────
+//  TEMA INFANTIL — fuente Nunito, pasteles vivos
+// ─────────────────────────────────────────────
+const theme = {
+  colors: {
+    // Fondos
+    background:    '#FFF8F0',   // crema cálido
+    surface:       '#FFFFFF',
+    surfaceAlt:    '#F0F7FF',   // azul muy suave
+
+    // Texto (alto contraste)
+    textPrimary:   '#2D2D2D',
+    textSecondary: '#555555',
+    textMuted:     '#888888',
+
+    // Acentos por nivel (pasteles vivos)
+    level1:        '#FF7043',   // coral
+    level2:        '#AB47BC',   // violeta
+    level3:        '#00ACC1',   // turquesa
+    level4:        '#43A047',   // verde
+    level5:        '#FFA726',   // ámbar
+
+    // Gradientes por nivel (pastel suave)
+    level1Gradient: ['#FFCCBC', '#FFAB91'] as [string, string],
+    level2Gradient: ['#E1BEE7', '#CE93D8'] as [string, string],
+    level3Gradient: ['#B2EBF2', '#80DEEA'] as [string, string],
+    level4Gradient: ['#C8E6C9', '#A5D6A7'] as [string, string],
+    level5Gradient: ['#FFE0B2', '#FFCC80'] as [string, string],
+
+    border:        'rgba(0,0,0,0.10)',
+    borderLight:   'rgba(0,0,0,0.06)',
+    success:       '#43A047',
+    white:         '#FFFFFF',
+    overlay:       'rgba(0,0,0,0.45)',
+  },
+  fonts: {
+    regular:    'Nunito_400Regular',
+    semiBold:   'Nunito_600SemiBold',
+    bold:       'Nunito_700Bold',
+    extraBold:  'Nunito_800ExtraBold',
+  },
+  sizes: {
+    xs: 13, sm: 15, base: 17, lg: 20, xl: 24, xxl: 30,
+  },
+  radius: {
+    sm: 10, md: 16, lg: 22, pill: 50,
+  },
+  space: {
+    xs: 6, sm: 10, md: 16, lg: 22, xl: 32,
+  },
+};
+
+// ─────────────────────────────────────────────
+//  TIPOS
+// ─────────────────────────────────────────────
 type Level = {
   id: number;
   title: string;
@@ -51,6 +105,9 @@ type UserProfile = {
   avatar: null | any;
 };
 
+// ─────────────────────────────────────────────
+//  DATOS
+// ─────────────────────────────────────────────
 const LEVELS: Level[] = [
   {
     id: 1,
@@ -60,8 +117,8 @@ const LEVELS: Level[] = [
     dialog: '¡Hola, Héroe! Para hablar LSM, nuestros dedos deben ser tan ágiles como rayos. ¡Cierra fuerte y suelta como si lanzaras chispas mágicas! ¡Mira cómo lo hago yo!',
     duration: 30,
     type: 'video',
-    accentColor: '#f97316',
-    gradientColors: ['#7c2d12', '#431407'],
+    accentColor: theme.colors.level1,
+    gradientColors: theme.colors.level1Gradient,
   },
   {
     id: 2,
@@ -71,8 +128,8 @@ const LEVELS: Level[] = [
     dialog: '¡Eso es! Ahora imagina que tus manos son alas de mariposa. Vamos a mover las muñecas en círculos para que el vuelo sea suave. ¡Siente la energía fluir!',
     duration: 30,
     type: 'video',
-    accentColor: '#a855f7',
-    gradientColors: ['#4a044e', '#2e1065'],
+    accentColor: theme.colors.level2,
+    gradientColors: theme.colors.level2Gradient,
   },
   {
     id: 3,
@@ -82,8 +139,8 @@ const LEVELS: Level[] = [
     dialog: '¡Música maestro! Toca las notas invisibles en el aire. Mueve un dedo a la vez... ¡es más difícil de lo que parece, pero tú tienes el ritmo!',
     duration: 30,
     type: 'video',
-    accentColor: '#06b6d4',
-    gradientColors: ['#0c4a6e', '#082f49'],
+    accentColor: theme.colors.level3,
+    gradientColors: theme.colors.level3Gradient,
   },
   {
     id: 4,
@@ -93,8 +150,8 @@ const LEVELS: Level[] = [
     dialog: '¡Último esfuerzo! Vamos a estirar nuestro escudo protector. Empuja suavemente tus dedos hacia atrás... ¡Siente cómo tus manos se vuelven súper flexibles y listas para la acción!',
     duration: 30,
     type: 'video',
-    accentColor: '#22c55e',
-    gradientColors: ['#14532d', '#052e16'],
+    accentColor: theme.colors.level4,
+    gradientColors: theme.colors.level4Gradient,
   },
   {
     id: 5,
@@ -104,8 +161,8 @@ const LEVELS: Level[] = [
     dialog: '¡Lo lograste, Héroe! Ahora pon en práctica lo aprendido. Tienes 10 segundos por cada vocal. ¡Demuestra que tus manos ya hablan LSM!',
     duration: 10,
     type: 'cards',
-    accentColor: '#f59e0b',
-    gradientColors: ['#78350f', '#451a03'],
+    accentColor: theme.colors.level5,
+    gradientColors: theme.colors.level5Gradient,
   },
 ];
 
@@ -117,21 +174,17 @@ const VOCALES = [
   { letra: 'U', descripcion: 'Índice y medio juntos, apuntando arriba' },
 ];
 
-// ─────────────────────────────────────────────
-//  IMÁGENES DE PERFIL PREDESTINADAS
-//  👉 Reemplaza cada require con la ruta de tu imagen
-// ─────────────────────────────────────────────
 const AVATAR_OPTIONS = [
-  { id: 1, source:   require('../../assets/avatars/avatar_1.png')  },
-  { id: 2, source:   require('../../assets/avatars/avatar_2.png')  },
-  { id: 3, source:   require('../../assets/avatars/avatar_3.png')  },
-  { id: 4, source:   require('../../assets/avatars/avatar_4.png')  },
-  { id: 5, source:   require('../../assets/avatars/avatar_5.png')  },
-  { id: 6, source:   require('../../assets/avatars/avatar_6.png')  },
-  { id: 7, source:   require('../../assets/avatars/avatar_7.png')  },
-  { id: 8, source:   require('../../assets/avatars/avatar_8.png') },
-  { id: 9, source:   require('../../assets/avatars/avatar_9.png')  },
-  { id: 10, source:   require('../../assets/avatars/avatar_10.png')  },
+  { id: 1, source: require('../../assets/avatars/avatar_1.png') },
+  { id: 2, source: require('../../assets/avatars/avatar_2.png') },
+  { id: 3, source: require('../../assets/avatars/avatar_3.png') },
+  { id: 4, source: require('../../assets/avatars/avatar_4.png') },
+  { id: 5, source: require('../../assets/avatars/avatar_5.png') },
+  { id: 6, source: require('../../assets/avatars/avatar_6.png') },
+  { id: 7, source: require('../../assets/avatars/avatar_7.png') },
+  { id: 8, source: require('../../assets/avatars/avatar_8.png') },
+  { id: 9, source: require('../../assets/avatars/avatar_9.png') },
+  { id: 10, source: require('../../assets/avatars/avatar_10.png') },
 ];
 
 // ─────────────────────────────────────────────
@@ -170,14 +223,13 @@ function AvatarPickerModal({
                 {avatar.source ? (
                   <Image source={avatar.source} style={avatarPickerStyles.avatarOptionImg} />
                 ) : (
-                  // Placeholder mientras no hay imagen
                   <View style={avatarPickerStyles.avatarOptionPlaceholder}>
                     <Text style={avatarPickerStyles.avatarOptionNum}>{avatar.id}</Text>
                   </View>
                 )}
                 {currentAvatarId === avatar.id && (
                   <View style={avatarPickerStyles.checkOverlay}>
-                    <CheckCircle size={20} color="#22c55e" />
+                    <CheckCircle size={20} color={theme.colors.success} />
                   </View>
                 )}
               </TouchableOpacity>
@@ -239,20 +291,20 @@ function EditProfileScreen({
     <Animated.View style={[editStyles.screen, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
 
-        {/* Header — solo título y botón atrás */}
-        <LinearGradient colors={['#0f172a', '#1a2540']} style={editStyles.header}>
+        {/* Header */}
+        <View style={editStyles.header}>
           <TouchableOpacity onPress={onBack} style={editStyles.backBtn}>
-            <ArrowLeft size={20} color="#60a5fa" />
+            <ArrowLeft size={20} color={theme.colors.level3} />
           </TouchableOpacity>
           <Text style={editStyles.headerTitle}>Editar Perfil</Text>
-        </LinearGradient>
+        </View>
 
         <ScrollView
           style={editStyles.body}
           contentContainerStyle={editStyles.bodyContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Avatar — toca para abrir selector */}
+          {/* Avatar */}
           <View style={editStyles.avatarSection}>
             <TouchableOpacity
               style={editStyles.avatarWrap}
@@ -263,10 +315,9 @@ function EditProfileScreen({
                 <Image source={form.avatar} style={editStyles.avatarImg} />
               ) : (
                 <View style={editStyles.avatarFallback}>
-                  <User size={42} color="#60a5fa" />
+                  <User size={42} color={theme.colors.level3} />
                 </View>
               )}
-              {/* Overlay de cámara */}
               <View style={editStyles.cameraOverlay}>
                 <Text style={editStyles.cameraOverlayText}>✎</Text>
               </View>
@@ -274,7 +325,7 @@ function EditProfileScreen({
             <Text style={editStyles.avatarHint}>Toca tu foto para elegir un avatar</Text>
           </View>
 
-          {/* Campos: solo Nombre y Edad */}
+          {/* Campos */}
           <View style={editStyles.fieldsCard}>
             <View style={editStyles.fieldGroup}>
               <Text style={editStyles.fieldLabel}>Nombre</Text>
@@ -283,8 +334,8 @@ function EditProfileScreen({
                 value={form.name}
                 onChangeText={t => setForm(f => ({ ...f, name: t }))}
                 placeholder="Tu nombre completo"
-                placeholderTextColor="#334155"
-                selectionColor="#60a5fa"
+                placeholderTextColor={theme.colors.textMuted}
+                selectionColor={theme.colors.level3}
               />
             </View>
 
@@ -297,33 +348,15 @@ function EditProfileScreen({
                 value={form.age}
                 onChangeText={t => setForm(f => ({ ...f, age: t }))}
                 placeholder="Tu edad"
-                placeholderTextColor="#334155"
-                selectionColor="#60a5fa"
+                placeholderTextColor={theme.colors.textMuted}
+                selectionColor={theme.colors.level3}
                 keyboardType="numeric"
                 maxLength={3}
               />
             </View>
           </View>
 
-          {/* Stats decorativos 
-          <View style={editStyles.statsRow}>
-            {[
-              { num: '0', label: 'Señas\naprendidas' },
-              { num: '0', label: 'Días\nde racha' },
-              { num: '0', label: 'Niveles\ncompletados' },
-            ].map((s, i, arr) => (
-              <React.Fragment key={i}>
-                <View style={editStyles.statBox}>
-                  <Text style={editStyles.statNum}>{s.num}</Text>
-                  <Text style={editStyles.statLabel}>{s.label}</Text>
-                </View>
-                {i < arr.length - 1 && <View style={editStyles.statDivider} />}
-              </React.Fragment>
-            ))}
-          </View>
-          */}
-
-          {/* Botón Guardar abajo de los campos */}
+          {/* Botón Guardar */}
           <TouchableOpacity
             style={[editStyles.saveButton, saved && editStyles.saveButtonDone]}
             onPress={handleSave}
@@ -331,12 +364,12 @@ function EditProfileScreen({
           >
             {saved ? (
               <>
-                <CheckCircle size={18} color="#fff" />
+                <CheckCircle size={18} color={theme.colors.white} />
                 <Text style={editStyles.saveButtonText}>¡Guardado!</Text>
               </>
             ) : (
               <>
-                <Save size={18} color="#fff" />
+                <Save size={18} color={theme.colors.white} />
                 <Text style={editStyles.saveButtonText}>Guardar cambios</Text>
               </>
             )}
@@ -346,7 +379,6 @@ function EditProfileScreen({
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Modal selector de avatar */}
       <AvatarPickerModal
         visible={avatarPickerVisible}
         currentAvatarId={selectedAvatarId}
@@ -358,7 +390,7 @@ function EditProfileScreen({
 }
 
 // ─────────────────────────────────────────────
-//  TARJETA VOCAL  (Nivel 5)
+//  TARJETA VOCAL (Nivel 5)
 // ─────────────────────────────────────────────
 function VocalCard({ vocal, onComplete }: { vocal: typeof VOCALES[0]; onComplete: () => void }) {
   const [seconds, setSeconds] = useState(10);
@@ -383,18 +415,8 @@ function VocalCard({ vocal, onComplete }: { vocal: typeof VOCALES[0]; onComplete
         <Text style={vocalStyles.letter}>{vocal.letra}</Text>
       </View>
 
-      {/* 👉 IMAGEN DE SEÑA — reemplaza el placeholder con tu imagen:
-          <Image
-            source={require('../../assets/senas/seña_' + vocal.letra + '.png')}
-            style={vocalStyles.signImage}
-            resizeMode="contain"
-          />
-      */}
       <View style={vocalStyles.imageSlot}>
         <Text style={vocalStyles.imagePlaceholder}>📷 Seña "{vocal.letra}"</Text>
-        <Text style={vocalStyles.imagePlaceholderHint}>
-          {/* 👉 Agrega aquí: require('../../assets/senas/seña_A.png') etc. */}
-        </Text>
       </View>
 
       <Text style={vocalStyles.description}>{vocal.descripcion}</Text>
@@ -455,6 +477,7 @@ function LevelModal({ level, onClose, onComplete }: { level: Level; onClose: () 
 
         <View style={modalStyles.handle} />
 
+        {/* Header del modal con gradiente pastel */}
         <LinearGradient
           colors={level.gradientColors}
           start={{ x: 0, y: 0 }}
@@ -468,7 +491,7 @@ function LevelModal({ level, onClose, onComplete }: { level: Level; onClose: () 
             <Text style={modalStyles.levelSub}>{level.subtitle}</Text>
           </View>
           <TouchableOpacity onPress={handleClose} style={modalStyles.closeBtn}>
-            <Text style={modalStyles.closeBtnText}>✕</Text>
+            <Text style={[modalStyles.closeBtnText, { color: level.accentColor }]}>✕</Text>
           </TouchableOpacity>
         </LinearGradient>
 
@@ -477,18 +500,19 @@ function LevelModal({ level, onClose, onComplete }: { level: Level; onClose: () 
           contentContainerStyle={modalStyles.bodyContent}
           showsVerticalScrollIndicator={false}
         >
-          
+          {/* Mascota + diálogo */}
+          <View style={modalStyles.dialogRow}>
             <Image
               source={require('../../assets/mascota/perro_mascota.png')}
               style={modalStyles.mascotImg}
               resizeMode="contain"
             />
-            <View style={[modalStyles.bubble, { borderColor: level.accentColor + '77' }]}>
+            <View style={[modalStyles.bubble, { borderColor: level.accentColor + '66' }]}>
               <Text style={modalStyles.bubbleText}>"{level.dialog}"</Text>
             </View>
-          
+          </View>
 
-          {/* ── Video (niveles 1-4) ── */}
+          {/* ── Video (niveles 1–4) ── */}
           {level.type === 'video' && !levelDone && (
             <View style={modalStyles.videoSection}>
               <View style={[modalStyles.videoBox, { borderColor: level.accentColor + '55' }]}>
@@ -498,26 +522,15 @@ function LevelModal({ level, onClose, onComplete }: { level: Level; onClose: () 
                     onPress={() => { setShowVideo(true); setTimerRunning(true); }}
                   >
                     <View style={[modalStyles.playCircle, { backgroundColor: level.accentColor }]}>
-                      <Play size={34} color="#fff" />
+                      <Play size={34} color={theme.colors.white} />
                     </View>
                     <Text style={modalStyles.videoLabel}>Toca para comenzar</Text>
                     <Text style={modalStyles.videoDuration}>{level.duration}s de ejercicio</Text>
                   </TouchableOpacity>
                 ) : (
                   <View style={modalStyles.videoActive}>
-                    {/* 👉 VIDEO NIVEL {level.id} — reemplaza con:
-                        <Video
-                          style={{ width: '100%', height: '100%' }}
-                          source={{ uri: 'URL_VIDEO_NIVEL_' + level.id }}
-                          // O local: source={require('../../assets/videos/nivel_' + level.id + '.mp4')}
-                          useNativeControls
-                          resizeMode="contain"
-                          shouldPlay
-                        />
-                    */}
                     <Text style={modalStyles.videoActiveTxt}>
-                      🎬 Video Nivel {level.id}{'\n'}
-                      {/* 👉 Inserta aquí el componente Video */}
+                      🎬 Video Nivel {level.id}
                     </Text>
                   </View>
                 )}
@@ -543,7 +556,7 @@ function LevelModal({ level, onClose, onComplete }: { level: Level; onClose: () 
 
           {/* ── Completado ── */}
           {levelDone && (
-            <View style={[modalStyles.completedBox, { borderColor: level.accentColor }]}>
+            <View style={[modalStyles.completedBox, { borderColor: level.accentColor + '88' }]}>
               <Text style={modalStyles.completedStar}>⭐</Text>
               <Text style={[modalStyles.completedTitle, { color: level.accentColor }]}>¡Nivel {level.id} Completado!</Text>
               <Text style={modalStyles.completedSub}>¡Eres un verdadero héroe del LSM! Tus manos ya saben hablar.</Text>
@@ -576,66 +589,42 @@ export default function Home() {
   const [activeLevel, setActiveLevel] = useState<Level | null>(null);
   const [completedLevels, setCompletedLevels] = useState<number[]>([]);
   const [showEditProfile, setShowEditProfile] = useState(false);
-  const [profile, setProfile] = useState<UserProfile>({
-    name: '',
-    age: '',
-    avatar: null,
-  });
+  const [profile, setProfile] = useState<UserProfile>({ name: '', age: '', avatar: null });
 
-  // 1. CARGAR DATOS AL INICIAR LA APP
+  // Cargar datos al iniciar
   useEffect(() => {
     const cargarDatos = async () => {
       try {
         const datosGuardados = await AsyncStorage.getItem('@perfil_usuario');
         if (datosGuardados !== null) {
           const usuario = JSON.parse(datosGuardados);
-          
-          // Buscamos la imagen del avatar basándonos en el ID guardado
           let avatarSource = null;
           if (usuario.avatarId) {
-            const avatarEncontrado = AVATAR_OPTIONS.find(a => a.id === usuario.avatarId);
-            if (avatarEncontrado) {
-              avatarSource = avatarEncontrado.source;
-            }
+            const found = AVATAR_OPTIONS.find(a => a.id === usuario.avatarId);
+            if (found) avatarSource = found.source;
           }
-
-          setProfile({
-            name: usuario.name || '',
-            age: usuario.age || '',
-            avatar: avatarSource,
-          });
+          setProfile({ name: usuario.name || '', age: usuario.age || '', avatar: avatarSource });
         }
       } catch (error) {
         console.error('Error al cargar el perfil:', error);
       }
     };
-
     cargarDatos();
   }, []);
 
-  // 2. FUNCIÓN PARA GUARDAR DATOS
   const handleSaveProfile = async (nuevoPerfil: UserProfile) => {
-    // Actualizamos la pantalla inmediatamente
     setProfile(nuevoPerfil);
-    
     try {
-      // Buscamos qué ID de avatar eligió para poder guardarlo como número
       let avatarIdParaGuardar = null;
       if (nuevoPerfil.avatar) {
-        const avatarEncontrado = AVATAR_OPTIONS.find(a => a.source === nuevoPerfil.avatar);
-        if (avatarEncontrado) {
-          avatarIdParaGuardar = avatarEncontrado.id;
-        }
+        const found = AVATAR_OPTIONS.find(a => a.source === nuevoPerfil.avatar);
+        if (found) avatarIdParaGuardar = found.id;
       }
-
-      const datosParaGuardar = {
+      await AsyncStorage.setItem('@perfil_usuario', JSON.stringify({
         name: nuevoPerfil.name,
         age: nuevoPerfil.age,
-        avatarId: avatarIdParaGuardar
-      };
-
-      await AsyncStorage.setItem('@perfil_usuario', JSON.stringify(datosParaGuardar));
-      console.log('¡Perfil guardado en AsyncStorage!');
+        avatarId: avatarIdParaGuardar,
+      }));
     } catch (error) {
       console.error('Error al guardar el perfil:', error);
     }
@@ -659,8 +648,7 @@ export default function Home() {
     return (
       <EditProfileScreen
         profile={profile}
-        // 👉 AQUÍ USAMOS LA NUEVA FUNCIÓN
-        onSave={handleSaveProfile} 
+        onSave={handleSaveProfile}
         onBack={() => setShowEditProfile(false)}
       />
     );
@@ -674,9 +662,8 @@ export default function Home() {
         showsVerticalScrollIndicator={false}
       >
 
-        {/* ── LOGO — se quitó el cuadro simulado, solo imagen real ── */}
+        {/* ── LOGO ── */}
         <View style={styles.logoRow}>
-          {/* 👉 Tu logo ya está aquí */}
           <Image
             source={require('../../assets/logo_senapp_2.png')}
             style={styles.logoImg}
@@ -695,7 +682,7 @@ export default function Home() {
           onPress={() => setShowEditProfile(true)}
         >
           <LinearGradient
-            colors={['rgba(96,165,250,0.16)', 'rgba(34,211,238,0.08)']}
+            colors={['#E3F2FD', '#F3E5F5']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.profileGradient}
@@ -706,14 +693,14 @@ export default function Home() {
                   <Image source={profile.avatar} style={styles.avatarImg} />
                 ) : (
                   <View style={styles.avatarFallback}>
-                    <User size={28} color="#60a5fa" />
+                    <User size={28} color={theme.colors.level3} />
                   </View>
                 )}
                 <View style={styles.onlineDot} />
               </View>
-              <View style={{ marginLeft: 14 }}>
+              <View style={{ marginLeft: theme.space.md }}>
                 <Text style={styles.greeting}>¡Bienvenido de nuevo,</Text>
-                <Text style={styles.profileName}>{profile.name} </Text>
+                <Text style={styles.profileName}>{profile.name || 'Héroe'}</Text>
                 {profile.age ? (
                   <Text style={styles.profileAge}>{profile.age} años</Text>
                 ) : null}
@@ -724,7 +711,7 @@ export default function Home() {
             </View>
             <View style={styles.profileRight}>
               <Text style={styles.editLabel}>Editar{'\n'}perfil</Text>
-              <ChevronRight size={18} color="#475569" />
+              <ChevronRight size={18} color={theme.colors.textMuted} />
             </View>
           </LinearGradient>
         </TouchableOpacity>
@@ -732,15 +719,12 @@ export default function Home() {
         {/* ── VIDEO TUTORIAL ── */}
         <View style={styles.section}>
           <View style={styles.tutorialCard}>
-            {/* Header integrado */}
             <View style={styles.tutorialHeader}>
               <View style={styles.tutorialIconWrap}>
-                <Play size={14} color="#22d3ee" />
+                <Play size={14} color={theme.colors.level3} />
               </View>
               <Text style={styles.tutorialHeaderTitle}>Video Tutorial</Text>
             </View>
-
-            {/* Video a pantalla completa dentro de la tarjeta */}
             <Video
               style={{ width: '100%', height: 220 }}
               source={require('../../assets/videos/introduccion_1.mp4')}
@@ -753,11 +737,12 @@ export default function Home() {
         {/* ── CAMINO DEL HÉROE ── */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Star size={18} color="#f59e0b" />
+            <Star size={18} color={theme.colors.level5} />
             <Text style={styles.sectionTitle}>El Camino del Héroe</Text>
           </View>
-          <Text style={styles.sectionSub}>Misión Manos Ágiles · Ayuda a la mascota a avanzar de nivel</Text>
+          <Text style={styles.sectionSub}>Misión Manos Ágiles · ¡Ayuda a la mascota a avanzar!</Text>
 
+          {/* Barra de progreso */}
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: `${(completedLevels.length / 5) * 100}%` }]} />
           </View>
@@ -765,6 +750,7 @@ export default function Home() {
             {completedLevels.length === 5 ? '🏆 ¡Misión completada!' : `${completedLevels.length} de 5 niveles`}
           </Text>
 
+          {/* Lista de niveles */}
           <View style={styles.levelsList}>
             {LEVELS.map(level => {
               const unlocked = isUnlocked(level.id);
@@ -779,37 +765,45 @@ export default function Home() {
                   <LinearGradient
                     colors={
                       completed
-                        ? ['rgba(34,197,94,0.18)', 'rgba(34,197,94,0.05)']
+                        ? ['#E8F5E9', '#F1F8E9']
                         : unlocked
-                        ? ['rgba(51,65,85,0.95)', 'rgba(15,23,42,0.95)']
-                        : ['rgba(18,24,36,0.7)', 'rgba(10,14,24,0.7)']
+                        ? [theme.colors.surface, theme.colors.surfaceAlt]
+                        : ['#F5F5F5', '#EEEEEE']
                     }
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={[
                       styles.levelCard,
-                      completed && { borderColor: 'rgba(34,197,94,0.38)' },
-                      unlocked && !completed && { borderColor: level.accentColor + '44' },
-                      !unlocked && { borderColor: 'rgba(30,40,55,0.4)' },
+                      completed && { borderColor: theme.colors.success + '55' },
+                      unlocked && !completed && { borderColor: level.accentColor + '55' },
+                      !unlocked && { borderColor: theme.colors.border },
                     ]}
                   >
+                    {/* Badge de estado */}
                     <View style={[styles.levelBadge, {
-                      backgroundColor: completed ? '#22c55e' : unlocked ? level.accentColor : '#1e293b'
+                      backgroundColor: completed
+                        ? theme.colors.success
+                        : unlocked
+                        ? level.accentColor
+                        : '#BDBDBD',
                     }]}>
                       {completed
-                        ? <CheckCircle size={15} color="#fff" />
+                        ? <CheckCircle size={15} color={theme.colors.white} />
                         : unlocked
                         ? <Text style={styles.levelBadgeNum}>{level.id}</Text>
-                        : <Lock size={13} color="#475569" />
+                        : <Lock size={13} color={theme.colors.white} />
                       }
                     </View>
-                    <Text style={[styles.levelEmoji, !unlocked && { opacity: 0.25 }]}>{level.emoji}</Text>
+
+                    <Text style={[styles.levelEmoji, !unlocked && { opacity: 0.4 }]}>{level.emoji}</Text>
+
                     <View style={{ flex: 1 }}>
                       <Text style={[styles.levelName, !unlocked && styles.dimText]} numberOfLines={1}>
                         {level.title}
                       </Text>
-                      <Text style={[styles.levelSub, !unlocked && styles.dimText]}>{level.subtitle}</Text>
+                      <Text style={[styles.levelSub, !unlocked && styles.dimSubText]}>{level.subtitle}</Text>
                     </View>
+
                     {unlocked && !completed && (
                       <View style={[styles.levelPill, { backgroundColor: level.accentColor + '22' }]}>
                         <Text style={[styles.levelPillTxt, { color: level.accentColor }]}>
@@ -828,9 +822,10 @@ export default function Home() {
             })}
           </View>
 
+          {/* Banner final */}
           {completedLevels.length === 5 && (
             <LinearGradient
-              colors={['rgba(245,158,11,0.18)', 'rgba(245,158,11,0.04)']}
+              colors={['#FFF8E1', '#FFF3E0']}
               style={styles.allDoneBanner}
             >
               <Text style={styles.allDoneTitle}>🏆 ¡Misión Completada, Héroe!</Text>
@@ -854,218 +849,870 @@ export default function Home() {
 }
 
 // ─────────────────────────────────────────────
-//  ESTILOS HOME
+//  ESTILOS HOME — fondo claro, Nunito, pasteles
 // ─────────────────────────────────────────────
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#070d1a' },
-  content: { padding: 18, paddingTop: 56, gap: 20 },
+  root: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  content: {
+    padding: theme.space.lg,
+    paddingTop: 56,
+    gap: theme.space.lg,
+  },
 
-  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  logoImg: { width: 58, height: 58, borderRadius: 15 },
-  appName: { color: '#e2e8f0', fontSize: 19, fontWeight: '800', letterSpacing: 0.3 },
-  appTagline: { color: '#3b4f6b', fontSize: 11, marginTop: 2, letterSpacing: 0.2 },
+  // Logo
+  logoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.space.md,
+  },
+  logoImg: {
+    width: 58,
+    height: 58,
+    borderRadius: 15,
+  },
+  appName: {
+    color: theme.colors.textPrimary,
+    fontSize: theme.sizes.xl,
+    fontFamily: theme.fonts.extraBold,
+    letterSpacing: 0.3,
+  },
+  appTagline: {
+    color: theme.colors.textMuted,
+    fontSize: theme.sizes.xs,
+    fontFamily: theme.fonts.regular,
+    marginTop: 2,
+  },
 
-  profileCard: { borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(96,165,250,0.2)' },
-  profileGradient: { padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  profileLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  avatarRing: { width: 60, height: 60, borderRadius: 30, borderWidth: 2.5, borderColor: '#60a5fa', justifyContent: 'center', alignItems: 'center', position: 'relative' },
-  avatarFallback: { width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(96,165,250,0.1)', justifyContent: 'center', alignItems: 'center' },
-  avatarImg: { width: 52, height: 52, borderRadius: 26 },
-  onlineDot: { position: 'absolute', bottom: 1, right: 1, width: 13, height: 13, borderRadius: 7, backgroundColor: '#22c55e', borderWidth: 2, borderColor: '#070d1a' },
-  greeting: { color: '#475569', fontSize: 12 },
-  profileName: { color: '#f1f5f9', fontSize: 18, fontWeight: '700', marginTop: 1 },
-  profileAge: { color: '#64748b', fontSize: 12, marginTop: 1 },
-  progressPill: { marginTop: 6, backgroundColor: 'rgba(96,165,250,0.14)', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3, alignSelf: 'flex-start' },
-  progressPillTxt: { color: '#60a5fa', fontSize: 11, fontWeight: '600' },
-  profileRight: { flexDirection: 'row', alignItems: 'center', gap: 2, paddingLeft: 8 },
-  editLabel: { color: '#475569', fontSize: 11, textAlign: 'right', lineHeight: 16 },
+  // Perfil
+  profileCard: {
+    borderRadius: theme.radius.lg,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  profileGradient: {
+    padding: theme.space.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  profileLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  avatarRing: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 2.5,
+    borderColor: theme.colors.level3,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  avatarFallback: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#E0F7FA',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarImg: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+  },
+  onlineDot: {
+    position: 'absolute',
+    bottom: 1,
+    right: 1,
+    width: 13,
+    height: 13,
+    borderRadius: 7,
+    backgroundColor: theme.colors.success,
+    borderWidth: 2,
+    borderColor: theme.colors.white,
+  },
+  greeting: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.sizes.sm,
+    fontFamily: theme.fonts.regular,
+  },
+  profileName: {
+    color: theme.colors.textPrimary,
+    fontSize: theme.sizes.lg,
+    fontFamily: theme.fonts.extraBold,
+    marginTop: 1,
+  },
+  profileAge: {
+    color: theme.colors.textMuted,
+    fontSize: theme.sizes.sm,
+    fontFamily: theme.fonts.regular,
+    marginTop: 1,
+  },
+  progressPill: {
+    marginTop: 6,
+    backgroundColor: '#E0F2F1',
+    borderRadius: theme.radius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    alignSelf: 'flex-start',
+  },
+  progressPillTxt: {
+    color: theme.colors.level3,
+    fontSize: theme.sizes.xs,
+    fontFamily: theme.fonts.bold,
+  },
+  profileRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    paddingLeft: 8,
+  },
+  editLabel: {
+    color: theme.colors.textMuted,
+    fontSize: theme.sizes.xs,
+    fontFamily: theme.fonts.regular,
+    textAlign: 'right',
+    lineHeight: 16,
+  },
 
-  section: { gap: 10 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  sectionTitle: { color: '#f1f5f9', fontSize: 17, fontWeight: '700' },
-  sectionSub: { color: '#334155', fontSize: 12, marginTop: -4 },
+  // Secciones
+  section: {
+    gap: theme.space.sm,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  sectionTitle: {
+    color: theme.colors.textPrimary,
+    fontSize: theme.sizes.lg,
+    fontFamily: theme.fonts.extraBold,
+  },
+  sectionSub: {
+    color: theme.colors.textMuted,
+    fontSize: theme.sizes.sm,
+    fontFamily: theme.fonts.regular,
+    marginTop: -4,
+  },
 
-  tutorialBox: { width: '100%', height: 200, borderRadius: 16, overflow: 'hidden', backgroundColor: '#0b1526', borderWidth: 1.5, borderColor: 'rgba(34,211,238,0.25)' },
-  tutorialPlaceholder: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 8 },
-  tutorialPlayBtn: { width: 70, height: 70, borderRadius: 35, backgroundColor: '#22d3ee', justifyContent: 'center', alignItems: 'center', shadowColor: '#22d3ee', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 18, elevation: 10 },
-  tutorialLabel: { color: '#cbd5e1', fontSize: 14, fontWeight: '600' },
-  tutorialSub: { color: '#334155', fontSize: 12 },
-
-  progressTrack: { height: 5, backgroundColor: '#1e293b', borderRadius: 3, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: '#f59e0b', borderRadius: 3 },
-  progressLabel: { color: '#475569', fontSize: 11, textAlign: 'right', marginTop: 4 },
-
-  levelsList: { gap: 10 },
-  levelCard: { borderRadius: 16, borderWidth: 1, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  levelBadge: { width: 30, height: 30, borderRadius: 15, justifyContent: 'center', alignItems: 'center' },
-  levelBadgeNum: { color: '#fff', fontSize: 13, fontWeight: '800' },
-  levelEmoji: { fontSize: 26 },
-  levelName: { color: '#f1f5f9', fontWeight: '700', fontSize: 14 },
-  levelSub: { color: '#475569', fontSize: 11, marginTop: 2 },
-  dimText: { color: '#1e293b' },
-  levelPill: { borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
-  levelPillTxt: { fontSize: 11, fontWeight: '600' },
-  donePill: { backgroundColor: 'rgba(34,197,94,0.16)', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
-  donePillTxt: { color: '#22c55e', fontSize: 11, fontWeight: '600' },
-
-  allDoneBanner: { borderRadius: 16, padding: 20, alignItems: 'center', gap: 6, borderWidth: 1, borderColor: 'rgba(245,158,11,0.28)', marginTop: 4 },
-  allDoneTitle: { color: '#f59e0b', fontSize: 17, fontWeight: '800' },
-  allDoneSub: { color: '#64748b', fontSize: 13, textAlign: 'center' },
+  // Tutorial card
   tutorialCard: {
-  borderRadius: 16,
-  overflow: 'hidden',
-  borderWidth: 1.5,
-  borderColor: 'rgba(34,211,238,0.25)',
-  backgroundColor: '#0b1526',
-},
-tutorialHeader: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: 8,
-  paddingHorizontal: 14,
-  paddingVertical: 10,
-  backgroundColor: 'rgba(7,13,26,0.9)',
-  borderBottomWidth: 1,
-  borderBottomColor: 'rgba(34,211,238,0.15)',
-},
-tutorialIconWrap: {
-  width: 26,
-  height: 26,
-  borderRadius: 8,
-  backgroundColor: 'rgba(34,211,238,0.15)',
-  justifyContent: 'center',
-  alignItems: 'center',
-},
-tutorialHeaderTitle: {
-  color: '#f1f5f9',
-  fontSize: 15,
-  fontWeight: '700',
-},
+    borderRadius: theme.radius.md,
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: theme.colors.level3 + '44',
+    backgroundColor: theme.colors.surface,
+  },
+  tutorialHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: '#E0F7FA',
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.level3 + '33',
+  },
+  tutorialIconWrap: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    backgroundColor: theme.colors.level3 + '33',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tutorialHeaderTitle: {
+    color: theme.colors.textPrimary,
+    fontSize: theme.sizes.base,
+    fontFamily: theme.fonts.bold,
+  },
 
+  // Progreso general
+  progressTrack: {
+    height: 8,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: theme.colors.level5,
+    borderRadius: 4,
+  },
+  progressLabel: {
+    color: theme.colors.textMuted,
+    fontSize: theme.sizes.sm,
+    fontFamily: theme.fonts.semiBold,
+    textAlign: 'right',
+    marginTop: 4,
+  },
+
+  // Tarjetas de nivel
+  levelsList: {
+    gap: theme.space.sm,
+  },
+  levelCard: {
+    borderRadius: theme.radius.md,
+    borderWidth: 1.5,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    // Sombra suave para dar profundidad
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  levelBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  levelBadgeNum: {
+    color: theme.colors.white,
+    fontSize: theme.sizes.base,
+    fontFamily: theme.fonts.extraBold,
+  },
+  levelEmoji: {
+    fontSize: 28,
+  },
+  levelName: {
+    color: theme.colors.textPrimary,
+    fontFamily: theme.fonts.bold,
+    fontSize: theme.sizes.base,
+  },
+  levelSub: {
+    color: theme.colors.textSecondary,
+    fontFamily: theme.fonts.regular,
+    fontSize: theme.sizes.sm,
+    marginTop: 2,
+  },
+  dimText: {
+    color: '#BDBDBD',
+    fontFamily: theme.fonts.bold,
+  },
+  dimSubText: {
+    color: '#BDBDBD',
+    fontFamily: theme.fonts.regular,
+  },
+  levelPill: {
+    borderRadius: theme.radius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  levelPillTxt: {
+    fontSize: theme.sizes.xs,
+    fontFamily: theme.fonts.bold,
+  },
+  donePill: {
+    backgroundColor: '#E8F5E9',
+    borderRadius: theme.radius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  donePillTxt: {
+    color: theme.colors.success,
+    fontSize: theme.sizes.xs,
+    fontFamily: theme.fonts.bold,
+  },
+
+  // Banner de misión completada
+  allDoneBanner: {
+    borderRadius: theme.radius.md,
+    padding: 20,
+    alignItems: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderColor: theme.colors.level5 + '55',
+    marginTop: 4,
+  },
+  allDoneTitle: {
+    color: '#E65100',
+    fontSize: theme.sizes.lg,
+    fontFamily: theme.fonts.extraBold,
+  },
+  allDoneSub: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.sizes.sm,
+    fontFamily: theme.fonts.regular,
+    textAlign: 'center',
+  },
 });
 
 // ─────────────────────────────────────────────
 //  ESTILOS MODAL
 // ─────────────────────────────────────────────
 const modalStyles = StyleSheet.create({
-  overlay: { ...StyleSheet.absoluteFillObject, zIndex: 100, justifyContent: 'flex-end' },
-  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.78)' },
-  modal: { backgroundColor: '#0f172a', borderTopLeftRadius: 28, borderTopRightRadius: 28, height: SCREEN_HEIGHT * 0.88, borderWidth: 1, borderColor: 'rgba(96,165,250,0.15)', overflow: 'hidden' },
-  handle: { width: 40, height: 4, backgroundColor: '#1e293b', borderRadius: 2, alignSelf: 'center', marginTop: 10, marginBottom: 2 },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 18, paddingVertical: 16, gap: 12 },
-  headerEmoji: { fontSize: 34 },
-  levelNum: { color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: '700', letterSpacing: 2 },
-  levelTitle: { color: '#fff', fontSize: 19, fontWeight: '800', marginTop: 1 },
-  levelSub: { color: 'rgba(255,255,255,0.45)', fontSize: 12, marginTop: 2 },
-  closeBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.12)', justifyContent: 'center', alignItems: 'center' },
-  closeBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 100,
+    justifyContent: 'flex-end',
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: theme.colors.overlay,
+  },
+  modal: {
+    backgroundColor: theme.colors.surface,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    height: SCREEN_HEIGHT * 0.88,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    overflow: 'hidden',
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 10,
+    marginBottom: 2,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    gap: 12,
+  },
+  headerEmoji: {
+    fontSize: 34,
+  },
+  levelNum: {
+    color: theme.colors.textMuted,
+    fontSize: 10,
+    fontFamily: theme.fonts.extraBold,
+    letterSpacing: 2,
+  },
+  levelTitle: {
+    color: theme.colors.textPrimary,
+    fontSize: theme.sizes.lg,
+    fontFamily: theme.fonts.extraBold,
+    marginTop: 1,
+  },
+  levelSub: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.sizes.sm,
+    fontFamily: theme.fonts.regular,
+    marginTop: 2,
+  },
+  closeBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(0,0,0,0.08)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeBtnText: {
+    fontSize: 16,
+    fontFamily: theme.fonts.bold,
+  },
   body: { flex: 1 },
-  bodyContent: { padding: 18, gap: 16 },
-  dialogRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
-  mascotPlaceholder: { width: 78, height: 112, borderRadius: 14, borderWidth: 2, backgroundColor: 'rgba(255,255,255,0.03)', justifyContent: 'center', alignItems: 'center', gap: 4 },
-  mascotIcon: { fontSize: 28 },
-  mascotLabel: { color: '#334155', fontSize: 10 },
-  mascotImg: { width: 78, height: 112, borderRadius: 14 },
-  bubble: { flex: 1, backgroundColor: 'rgba(30,41,59,0.9)', borderRadius: 16, borderWidth: 1.5, padding: 14 },
-  bubbleText: { color: '#94a3b8', fontSize: 13, lineHeight: 20, fontStyle: 'italic' },
+  bodyContent: {
+    padding: 18,
+    gap: 16,
+  },
+  dialogRow: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'flex-start',
+  },
+  mascotImg: {
+    width: 78,
+    height: 112,
+    borderRadius: 14,
+  },
+  bubble: {
+    flex: 1,
+    backgroundColor: theme.colors.surfaceAlt,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    padding: 14,
+  },
+  bubbleText: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.sizes.sm,
+    fontFamily: theme.fonts.regular,
+    lineHeight: 22,
+    fontStyle: 'italic',
+  },
   videoSection: { gap: 10 },
-  videoBox: { width: '100%', height: 246, borderRadius: 16, overflow: 'hidden', backgroundColor: '#080f1e', borderWidth: 1.5 },
-  videoPlaceholder: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 10 },
-  playCircle: { width: 74, height: 74, borderRadius: 37, justifyContent: 'center', alignItems: 'center' },
-  videoLabel: { color: '#cbd5e1', fontSize: 14, fontWeight: '600' },
-  videoDuration: { color: '#334155', fontSize: 12 },
-  videoActive: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#060d1a' },
-  videoActiveTxt: { color: '#1e293b', textAlign: 'center', fontSize: 13, lineHeight: 22 },
-  timerRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  timerTrack: { flex: 1, height: 6, backgroundColor: '#1e293b', borderRadius: 3, overflow: 'hidden' },
-  timerFill: { height: '100%', borderRadius: 3 },
-  timerText: { fontSize: 13, fontWeight: '700', minWidth: 32, textAlign: 'right' },
+  videoBox: {
+    width: '100%',
+    height: 246,
+    borderRadius: theme.radius.md,
+    overflow: 'hidden',
+    backgroundColor: '#F5F5F5',
+    borderWidth: 1.5,
+  },
+  videoPlaceholder: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
+  },
+  playCircle: {
+    width: 74,
+    height: 74,
+    borderRadius: 37,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  videoLabel: {
+    color: theme.colors.textPrimary,
+    fontSize: theme.sizes.base,
+    fontFamily: theme.fonts.bold,
+  },
+  videoDuration: {
+    color: theme.colors.textMuted,
+    fontSize: theme.sizes.sm,
+    fontFamily: theme.fonts.regular,
+  },
+  videoActive: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+  },
+  videoActiveTxt: {
+    color: theme.colors.textMuted,
+    textAlign: 'center',
+    fontSize: theme.sizes.base,
+    fontFamily: theme.fonts.regular,
+  },
+  timerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  timerTrack: {
+    flex: 1,
+    height: 8,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  timerFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  timerText: {
+    fontSize: theme.sizes.base,
+    fontFamily: theme.fonts.extraBold,
+    minWidth: 32,
+    textAlign: 'right',
+  },
   vocalesWrap: { gap: 10 },
-  vocalesProgress: { color: '#475569', fontSize: 13, textAlign: 'center' },
-  completedBox: { borderRadius: 22, borderWidth: 1.5, padding: 28, alignItems: 'center', gap: 10, backgroundColor: 'rgba(255,255,255,0.02)' },
+  vocalesProgress: {
+    color: theme.colors.textMuted,
+    fontSize: theme.sizes.base,
+    fontFamily: theme.fonts.semiBold,
+    textAlign: 'center',
+  },
+  completedBox: {
+    borderRadius: 22,
+    borderWidth: 2,
+    padding: 28,
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: theme.colors.surface,
+  },
   completedStar: { fontSize: 42 },
-  completedTitle: { fontSize: 22, fontWeight: '800' },
-  completedSub: { color: '#64748b', fontSize: 13, textAlign: 'center', lineHeight: 20 },
-  completedBtns: { flexDirection: 'row', gap: 10, marginTop: 8, flexWrap: 'wrap', justifyContent: 'center' },
-  repeatBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 18, paddingVertical: 12, borderRadius: 20, borderWidth: 1.5, backgroundColor: 'rgba(255,255,255,0.03)' },
-  repeatBtnText: { fontWeight: '700', fontSize: 14 },
-  continueBtn: { paddingHorizontal: 22, paddingVertical: 12, borderRadius: 20 },
-  continueBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  completedTitle: {
+    fontSize: theme.sizes.xl,
+    fontFamily: theme.fonts.extraBold,
+  },
+  completedSub: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.sizes.base,
+    fontFamily: theme.fonts.regular,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  completedBtns: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 8,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  repeatBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: theme.radius.pill,
+    borderWidth: 1.5,
+    backgroundColor: theme.colors.surface,
+  },
+  repeatBtnText: {
+    fontFamily: theme.fonts.bold,
+    fontSize: theme.sizes.base,
+  },
+  continueBtn: {
+    paddingHorizontal: 22,
+    paddingVertical: 12,
+    borderRadius: theme.radius.pill,
+  },
+  continueBtnText: {
+    color: theme.colors.white,
+    fontFamily: theme.fonts.bold,
+    fontSize: theme.sizes.base,
+  },
 });
 
 // ─────────────────────────────────────────────
 //  ESTILOS EDITAR PERFIL
 // ─────────────────────────────────────────────
 const editStyles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#070d1a' },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 18, paddingTop: 56, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: 'rgba(96,165,250,0.1)', gap: 12 },
-  backBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(96,165,250,0.1)', justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { flex: 1, color: '#f1f5f9', fontSize: 17, fontWeight: '700' },
+  screen: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 18,
+    paddingTop: 56,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+    gap: 12,
+    backgroundColor: theme.colors.surface,
+  },
+  backBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#E0F7FA',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    flex: 1,
+    color: theme.colors.textPrimary,
+    fontSize: theme.sizes.lg,
+    fontFamily: theme.fonts.extraBold,
+  },
   body: { flex: 1 },
-  bodyContent: { padding: 22, gap: 22 },
+  bodyContent: {
+    padding: 22,
+    gap: 22,
+  },
 
-  avatarSection: { alignItems: 'center', gap: 10 },
+  // Avatar
+  avatarSection: {
+    alignItems: 'center',
+    gap: 10,
+  },
   avatarWrap: { position: 'relative' },
-  avatarFallback: { width: 104, height: 104, borderRadius: 52, backgroundColor: 'rgba(96,165,250,0.1)', borderWidth: 2.5, borderColor: '#60a5fa', justifyContent: 'center', alignItems: 'center' },
-  avatarImg: { width: 104, height: 104, borderRadius: 52 },
-  cameraOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 34, backgroundColor: 'rgba(0,0,0,0.55)', borderBottomLeftRadius: 52, borderBottomRightRadius: 52, justifyContent: 'center', alignItems: 'center' },
-  cameraOverlayText: { color: '#fff', fontSize: 16 },
-  avatarHint: { color: '#334155', fontSize: 12 },
+  avatarFallback: {
+    width: 104,
+    height: 104,
+    borderRadius: 52,
+    backgroundColor: '#E0F7FA',
+    borderWidth: 3,
+    borderColor: theme.colors.level3,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarImg: {
+    width: 104,
+    height: 104,
+    borderRadius: 52,
+    borderWidth: 3,
+    borderColor: theme.colors.level3,
+  },
+  cameraOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 34,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    borderBottomLeftRadius: 52,
+    borderBottomRightRadius: 52,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cameraOverlayText: {
+    color: theme.colors.white,
+    fontSize: 16,
+  },
+  avatarHint: {
+    color: theme.colors.textMuted,
+    fontSize: theme.sizes.sm,
+    fontFamily: theme.fonts.regular,
+  },
 
-  fieldsCard: { backgroundColor: 'rgba(15,23,42,0.9)', borderRadius: 20, padding: 18, gap: 14, borderWidth: 1, borderColor: 'rgba(96,165,250,0.1)' },
+  // Campos
+  fieldsCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.lg,
+    padding: 18,
+    gap: 14,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
   fieldGroup: { gap: 6 },
-  fieldLabel: { color: '#475569', fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' },
-  input: { backgroundColor: 'rgba(7,13,26,0.8)', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(96,165,250,0.18)', color: '#f1f5f9', fontSize: 15, paddingHorizontal: 14, paddingVertical: 12 },
-  divider: { height: 1, backgroundColor: 'rgba(96,165,250,0.08)' },
+  fieldLabel: {
+    color: theme.colors.textMuted,
+    fontSize: theme.sizes.xs,
+    fontFamily: theme.fonts.extraBold,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  input: {
+    backgroundColor: theme.colors.background,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: theme.colors.border,
+    color: theme.colors.textPrimary,
+    fontSize: theme.sizes.base,
+    fontFamily: theme.fonts.regular,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: theme.colors.borderLight,
+  },
 
-  statsRow: { flexDirection: 'row', backgroundColor: 'rgba(15,23,42,0.7)', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: 'rgba(96,165,250,0.08)', alignItems: 'center', justifyContent: 'space-around' },
-  statBox: { alignItems: 'center', gap: 4, flex: 1 },
-  statNum: { color: '#60a5fa', fontSize: 26, fontWeight: '800' },
-  statLabel: { color: '#334155', fontSize: 10, textAlign: 'center', lineHeight: 14 },
-  statDivider: { width: 1, height: 36, backgroundColor: 'rgba(96,165,250,0.1)' },
-
-  // Botón guardar abajo
-  saveButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: '#3b82f6', borderRadius: 16, paddingVertical: 16, shadowColor: '#3b82f6', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.35, shadowRadius: 12, elevation: 6 },
-  saveButtonDone: { backgroundColor: '#22c55e', shadowColor: '#22c55e' },
-  saveButtonText: { color: '#fff', fontWeight: '800', fontSize: 16 },
+  // Botón guardar
+  saveButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: theme.colors.level3,
+    borderRadius: theme.radius.pill,
+    paddingVertical: 16,
+    shadowColor: theme.colors.level3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  saveButtonDone: {
+    backgroundColor: theme.colors.success,
+    shadowColor: theme.colors.success,
+  },
+  saveButtonText: {
+    color: theme.colors.white,
+    fontFamily: theme.fonts.extraBold,
+    fontSize: theme.sizes.lg,
+  },
 });
 
 // ─────────────────────────────────────────────
 //  ESTILOS AVATAR PICKER
 // ─────────────────────────────────────────────
 const avatarPickerStyles = StyleSheet.create({
-  overlay: { flex: 1, justifyContent: 'flex-end' },
-  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.7)' },
-  sheet: { backgroundColor: '#0f172a', borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, borderWidth: 1, borderColor: 'rgba(96,165,250,0.15)' },
-  handle: { width: 40, height: 4, backgroundColor: '#1e293b', borderRadius: 2, alignSelf: 'center', marginBottom: 20 },
-  title: { color: '#f1f5f9', fontSize: 18, fontWeight: '800', textAlign: 'center' },
-  subtitle: { color: '#475569', fontSize: 13, textAlign: 'center', marginTop: 4, marginBottom: 20 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginBottom: 20 },
-  avatarOption: { width: 72, height: 72, borderRadius: 36, borderWidth: 2, borderColor: 'rgba(96,165,250,0.2)', overflow: 'hidden', position: 'relative' },
-  avatarOptionSelected: { borderColor: '#22c55e', borderWidth: 3 },
-  avatarOptionImg: { width: '100%', height: '100%' },
-  avatarOptionPlaceholder: { width: '100%', height: '100%', backgroundColor: 'rgba(96,165,250,0.08)', justifyContent: 'center', alignItems: 'center' },
-  avatarOptionNum: { color: '#60a5fa', fontSize: 20, fontWeight: '800' },
-  checkOverlay: { position: 'absolute', bottom: 2, right: 2, backgroundColor: '#070d1a', borderRadius: 12 },
-  closeBtn: { backgroundColor: 'rgba(96,165,250,0.1)', borderRadius: 14, paddingVertical: 14, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(96,165,250,0.2)' },
-  closeBtnText: { color: '#60a5fa', fontWeight: '700', fontSize: 15 },
+  overlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: theme.colors.overlay,
+  },
+  sheet: {
+    backgroundColor: theme.colors.surface,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  title: {
+    color: theme.colors.textPrimary,
+    fontSize: theme.sizes.lg,
+    fontFamily: theme.fonts.extraBold,
+    textAlign: 'center',
+  },
+  subtitle: {
+    color: theme.colors.textMuted,
+    fontSize: theme.sizes.base,
+    fontFamily: theme.fonts.regular,
+    textAlign: 'center',
+    marginTop: 4,
+    marginBottom: 20,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  avatarOption: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 2,
+    borderColor: theme.colors.border,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  avatarOptionSelected: {
+    borderColor: theme.colors.success,
+    borderWidth: 3,
+  },
+  avatarOptionImg: {
+    width: '100%',
+    height: '100%',
+  },
+  avatarOptionPlaceholder: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#E0F7FA',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarOptionNum: {
+    color: theme.colors.level3,
+    fontSize: 20,
+    fontFamily: theme.fonts.extraBold,
+  },
+  checkOverlay: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    backgroundColor: theme.colors.white,
+    borderRadius: 12,
+  },
+  closeBtn: {
+    backgroundColor: '#E0F7FA',
+    borderRadius: theme.radius.md,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.level3 + '44',
+  },
+  closeBtnText: {
+    color: theme.colors.level3,
+    fontFamily: theme.fonts.bold,
+    fontSize: theme.sizes.base,
+  },
 });
 
 // ─────────────────────────────────────────────
 //  ESTILOS TARJETA VOCAL
 // ─────────────────────────────────────────────
 const vocalStyles = StyleSheet.create({
-  card: { backgroundColor: 'rgba(15,23,42,0.95)', borderRadius: 20, borderWidth: 1.5, borderColor: 'rgba(245,158,11,0.32)', padding: 20, alignItems: 'center', gap: 12 },
-  letterRing: { width: 68, height: 68, borderRadius: 34, backgroundColor: 'rgba(245,158,11,0.15)', borderWidth: 2, borderColor: '#f59e0b', justifyContent: 'center', alignItems: 'center' },
-  letter: { color: '#f59e0b', fontSize: 34, fontWeight: '900' },
-  imageSlot: { width: '100%', height: 160, borderRadius: 14, backgroundColor: 'rgba(20,30,50,0.8)', borderWidth: 1, borderColor: '#1e293b', justifyContent: 'center', alignItems: 'center', borderStyle: 'dashed' },
-  imagePlaceholder: { color: '#334155', fontSize: 13 },
-  imagePlaceholderHint: { color: '#1e293b', fontSize: 10 },
-  signImage: { width: '100%', height: '100%', borderRadius: 14 },
-  description: { color: '#64748b', fontSize: 13, textAlign: 'center' },
-  timerTrack: { width: '100%', height: 6, backgroundColor: '#1e293b', borderRadius: 3, overflow: 'hidden' },
-  timerFill: { height: '100%', backgroundColor: '#f59e0b', borderRadius: 3 },
-  timerText: { color: '#f59e0b', fontSize: 13, fontWeight: '700' },
-  nextBtn: { backgroundColor: 'rgba(245,158,11,0.15)', borderRadius: 20, paddingHorizontal: 24, paddingVertical: 10, borderWidth: 1, borderColor: 'rgba(245,158,11,0.35)' },
-  nextBtnText: { color: '#f59e0b', fontWeight: '700', fontSize: 14 },})
-
+  card: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.lg,
+    borderWidth: 2,
+    borderColor: theme.colors.level5 + '55',
+    padding: 20,
+    alignItems: 'center',
+    gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  letterRing: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#FFF3E0',
+    borderWidth: 2.5,
+    borderColor: theme.colors.level5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  letter: {
+    color: theme.colors.level5,
+    fontSize: 36,
+    fontFamily: theme.fonts.extraBold,
+  },
+  imageSlot: {
+    width: '100%',
+    height: 160,
+    borderRadius: 14,
+    backgroundColor: '#F5F5F5',
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderStyle: 'dashed',
+  },
+  imagePlaceholder: {
+    color: theme.colors.textMuted,
+    fontSize: theme.sizes.base,
+    fontFamily: theme.fonts.regular,
+  },
+  signImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 14,
+  },
+  description: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.sizes.base,
+    fontFamily: theme.fonts.semiBold,
+    textAlign: 'center',
+  },
+  timerTrack: {
+    width: '100%',
+    height: 8,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  timerFill: {
+    height: '100%',
+    backgroundColor: theme.colors.level5,
+    borderRadius: 4,
+  },
+  timerText: {
+    color: theme.colors.level5,
+    fontSize: theme.sizes.base,
+    fontFamily: theme.fonts.extraBold,
+  },
+  nextBtn: {
+    backgroundColor: '#FFF3E0',
+    borderRadius: theme.radius.pill,
+    paddingHorizontal: 28,
+    paddingVertical: 12,
+    borderWidth: 1.5,
+    borderColor: theme.colors.level5 + '55',
+  },
+  nextBtnText: {
+    color: theme.colors.level5,
+    fontFamily: theme.fonts.extraBold,
+    fontSize: theme.sizes.base,
+  },
+});
