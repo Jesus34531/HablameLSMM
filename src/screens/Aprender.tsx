@@ -14,13 +14,15 @@ const iconoAnimales = require('../../assets/iconos/animales.png');
 const iconoDias     = require('../../assets/iconos/dias.png');
 const iconoSaludos  = require('../../assets/iconos/saludos.png');
 
-// Tipo correcto para el array
+// Tipo para cada categoría.
+// "destino" indica si va a SelectorSeñas (AR genérico) o a AprendizajeSaludos (AR de saludos).
 type Categoria = {
   id: string;
   customIcon: ImageSourcePropType;
   colors: [string, string];
   titulo: string;
   descripcion: string;
+  destino: 'SelectorSeñas' | 'AprendizajeSaludos';
 };
 
 export default function Vocabulario() {
@@ -29,40 +31,53 @@ export default function Vocabulario() {
   const categorias: Categoria[] = [
     {
       id: 'vocales',
-      customIcon: iconoVocales,      // ✅ PNG real
+      customIcon: iconoVocales,
       colors: ['#0ea5e9', '#0369a1'],
       titulo: 'VOCALES',
       descripcion: 'Escanea las tarjetas del abecedario para ver las señas de cada vocal en 3D',
+      destino: 'SelectorSeñas',
     },
     {
       id: 'colores',
-      customIcon: iconoColores,      // ✅ PNG real
+      customIcon: iconoColores,
       colors: ['#06b6d4', '#0e7490'],
       titulo: 'COLORES',
       descripcion: 'Apunta tu cámara a las tarjetas de colores para aprender sus señas',
+      destino: 'SelectorSeñas',
     },
     {
       id: 'animales',
-      customIcon: iconoAnimales,     // ✅ PNG real
+      customIcon: iconoAnimales,
       colors: ['#a855f7', '#0284c7'],
       titulo: 'ANIMALES',
       descripcion: 'Descubre cómo se representan los animales en lenguaje de señas',
+      destino: 'SelectorSeñas',
     },
     {
       id: 'diasSemana',
-      customIcon: iconoDias,         // ✅ PNG real
+      customIcon: iconoDias,
       colors: ['#f59e0b', '#b45309'],
       titulo: 'DÍAS DE LA SEMANA',
       descripcion: 'Aprende cómo se dicen los días de la semana en lenguaje de señas',
+      destino: 'SelectorSeñas',
     },
     {
       id: 'saludos',
-      customIcon: iconoSaludos,      // ✅ PNG real
+      customIcon: iconoSaludos,
       colors: ['#10b981', '#065f46'],
       titulo: 'SALUDOS',
       descripcion: 'Practica los saludos más comunes en lenguaje de señas mexicana',
+      destino: 'AprendizajeSaludos', // ← conecta con la pantalla AR de saludos
     },
   ];
+
+  const handlePress = (item: Categoria) => {
+    if (item.destino === 'AprendizajeSaludos') {
+      navigation.navigate('AprendizajeSaludos');
+    } else {
+      navigation.navigate('SelectorSeñas', { mode: item.id });
+    }
+  };
 
   return (
     <ScrollView
@@ -81,7 +96,7 @@ export default function Vocabulario() {
           <TouchableOpacity
             key={item.id}
             activeOpacity={0.75}
-            onPress={() => navigation.navigate('SelectorSeñas', { mode: item.id })}
+            onPress={() => handlePress(item)}
           >
             <LinearGradient
               colors={['rgba(51,65,85,0.6)', 'rgba(30,41,59,0.8)']}

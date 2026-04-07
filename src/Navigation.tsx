@@ -1,20 +1,19 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Home as HomeIcon, BookOpen, Gamepad2, GraduationCap } from 'lucide-react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { Platform, View, StyleSheet } from 'react-native';
+import { Platform, View, StyleSheet, Image } from 'react-native';
 
 import Welcome from './screens/Welcome';
 import Home from './screens/Home';
-import Vocabulario from './screens/Vocabulario';
+import Aprender from './screens/Aprender';
 import Juegos from './screens/Juegos';
 import Memorama from './screens/games/Memorama';
 import Adivina from './screens/games/Adivina';
-import Aprendizaje from './screens/Aprendizaje';
 import CameraScreen from './screens/Camera';
 import SelectorSeñas from './screens/SelectorSeñas';
 import TribiaDias from './screens/games/TribiaDias';
+import AprendizajeSaludos from './screens/Saludos'; // ← pantalla de saludos AR
 import type { UserProfile } from '../App';
 
 export type RootStackParamList = {
@@ -25,10 +24,36 @@ export type RootStackParamList = {
   GameAdivina: { level?: number };
   Camera: { mode: string; seña: string };
   SelectorSeñas: { mode: string };
+  AprendizajeSaludos: undefined; // ← nueva ruta para la pantalla AR de saludos
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
+
+// ── Slots para tus íconos PNG ──
+// Reemplaza cada require() con la ruta a tu archivo PNG cuando lo tengas listo.
+// Ejemplo: const iconoInicio = require('../../assets/iconos/tab_inicio.png');
+const iconoInicio    = require('../assets/iconos/home.png'); // 🔲 PON TU PNG AQUÍ
+const iconoVocab     = require('../assets/iconos/ra_2.png'); // 🔲 PON TU PNG AQUÍ
+const iconoJuegos    = require('../assets/iconos/juego2.png'); // 🔲 PON TU PNG AQUÍ
+
+function TabIcon({ source, color, focused }: { source: any; color: string; focused: boolean }) {
+  return (
+    <View style={focused ? styles.activeIconCircle : undefined}>
+      {source ? (
+        // Sin tintColor → el PNG se muestra con sus colores originales tal como fue descargado
+        <Image
+          source={source}
+          style={styles.tabIcon}
+          resizeMode="contain"
+        />
+      ) : (
+        // Placeholder visible mientras no hay PNG
+        <View style={[styles.tabIconPlaceholder, { borderColor: color }]} />
+      )}
+    </View>
+  );
+}
 
 function MainTabs() {
   return (
@@ -46,11 +71,11 @@ function MainTabs() {
           bottom: Platform.OS === 'android' ? 15 : 30,
           left: 15,
           right: 15,
-          height: 70,
+          height: 70,          // más alto para dar aire a íconos grandes
           borderRadius: 20,
           elevation: 10,
-          paddingBottom: 5,
-          paddingTop: 10,
+          paddingBottom: 8,
+          paddingTop: 8,
         },
       }}
     >
@@ -59,31 +84,16 @@ function MainTabs() {
         component={Home}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <View style={focused ? styles.activeIconCircle : undefined}>
-              <HomeIcon color={color} size={focused ? 28 : 24} />
-            </View>
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Vocabulario"
-        component={Vocabulario}
-        options={{
-          tabBarIcon: ({ color, focused }) => (
-            <View style={focused ? styles.activeIconCircle : undefined}>
-              <BookOpen color={color} size={focused ? 28 : 24} />
-            </View>
+            <TabIcon source={iconoInicio} color={color} focused={focused} />
           ),
         }}
       />
       <Tab.Screen
         name="Aprender"
-        component={Aprendizaje}
+        component={Aprender}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <View style={focused ? styles.activeIconCircle : undefined}>
-              <GraduationCap color={color} size={focused ? 28 : 24} />
-            </View>
+            <TabIcon source={iconoVocab} color={color} focused={focused} />
           ),
         }}
       />
@@ -92,9 +102,7 @@ function MainTabs() {
         component={Juegos}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <View style={focused ? styles.activeIconCircle : undefined}>
-              <Gamepad2 color={color} size={focused ? 28 : 24} />
-            </View>
+            <TabIcon source={iconoJuegos} color={color} focused={focused} />
           ),
         }}
       />
@@ -102,8 +110,6 @@ function MainTabs() {
   );
 }
 
-// ── WelcomeScreen separado como componente nombrado ──
-// Recibe navigation directamente como prop del Stack
 function WelcomeScreen({ navigation }: any) {
   return <Welcome onLogin={() => navigation.replace('MainTabs')} />;
 }
@@ -120,7 +126,6 @@ export default function Navigation({ userProfile, updateUserProfile }: Navigatio
         initialRouteName="Welcome"
         screenOptions={{ headerShown: false }}
       >
-        {/* ✅ component= en lugar de children como función */}
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
         <Stack.Screen name="MainTabs" component={MainTabs} />
         <Stack.Screen
@@ -132,6 +137,12 @@ export default function Navigation({ userProfile, updateUserProfile }: Navigatio
           name="Camera"
           component={CameraScreen}
           options={{ presentation: 'fullScreenModal' }}
+        />
+        {/* Pantalla AR de saludos — accesible desde la tarjeta de Saludos en Vocabulario */}
+        <Stack.Screen
+          name="AprendizajeSaludos"
+          component={AprendizajeSaludos}
+          options={{ presentation: 'card' }}
         />
         <Stack.Screen name="GameTribiaDias" component={TribiaDias} />
         <Stack.Screen name="GameMemorama" component={Memorama} />
@@ -147,5 +158,17 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 15,
     marginBottom: 2,
+  },
+  tabIcon: {
+    width: 38,   // más grande para que se vea con detalle
+    height: 38,
+  },
+  // Placeholder cuadrado que se muestra hasta que pongas tu PNG
+  tabIconPlaceholder: {
+    width: 38,
+    height: 38,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    opacity: 0.5,
   },
 });

@@ -1,32 +1,52 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, ImageSourcePropType, Alert } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { LinearGradient } from 'expo-linear-gradient';
 import { RootStackParamList } from '../Navigation';
+import FloatingBackBar from '../Floatingbackbar'; // ← Asegúrate de que la ruta sea correcta
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-// ============================================================
-// MISMA CONFIGURACIÓN QUE Camera.tsx
-// Cuando agregues animales o colores, actualiza aquí también
-// ============================================================
-const CATEGORIAS: Record<string, { label: string; señas: string[]; colors: [string, string] }> = {
+// --- 1. DEFINIMOS LA ESTRUCTURA COMO EN SALUDOS ---
+type SeñaItem = {
+  id: string;
+  etiqueta: string;
+  activo: boolean;
+  icono: ImageSourcePropType | null;
+};
+
+type CategoriaData = {
+  label: string;
+  items: SeñaItem[];
+};
+
+// --- 2. CONFIGURAMOS LAS CATEGORÍAS CON SUS ÍCONOS Y ESTADOS ---
+const CATEGORIAS: Record<string, CategoriaData> = {
   vocales: {
     label: 'Vocales',
-    señas: ['A', 'E', 'I', 'O', 'U'],
-    colors: ['#3b82f6', '#2563eb'],
+    items: [
+      { id: 'A', etiqueta: 'Vocal A', activo: true, icono: null }, // Reemplaza null con require('../../assets/iconos/letra_a.png')
+      { id: 'E', etiqueta: 'Vocal E', activo: true, icono: null },
+      { id: 'I', etiqueta: 'Vocal I', activo: false, icono: null }, // Ejemplo de inactivo
+      { id: 'O', etiqueta: 'Vocal O', activo: false, icono: null },
+      { id: 'U', etiqueta: 'Vocal U', activo: false, icono: null },
+    ],
   },
-  // colores: {
-  //   label: 'Colores',
-  //   señas: ['ROJO', 'AZUL', 'VERDE'],
-  //   colors: ['#06b6d4', '#0891b2'],
-  // },
-  // animales: {
-  //   label: 'Animales',
-  //   señas: ['PERRO', 'GATO', 'PAJARO'],
-  //   colors: ['#0ea5e9', '#0284c7'],
-  // },
+  colores: {
+    label: 'Colores',
+    items: [
+      { id: 'ROJO', etiqueta: 'Rojo', activo: true, icono: null },
+      { id: 'AZUL', etiqueta: 'Azul', activo: true, icono: null },
+      { id: 'VERDE', etiqueta: 'Verde', activo: false, icono: null },
+    ],
+  },
+  animales: {
+    label: 'Animales',
+    items: [
+      { id: 'PERRO', etiqueta: 'Perro', activo: true, icono: null },
+      { id: 'GATO', etiqueta: 'Gato', activo: false, icono: null },
+    ],
+  },
 };
 
 export default function SelectorSeñas() {
@@ -44,89 +64,119 @@ export default function SelectorSeñas() {
     );
   }
 
-  const abrirCamara = (seña: string) => {
-    navigation.navigate('Camera', { mode, seña });
+  // --- 3. LÓGICA DE NAVEGACIÓN ---
+  const abrirCamara = (item: SeñaItem) => {
+    if (!item.activo) {
+      Alert.alert('Próximamente', `La seña para "${item.etiqueta}" se agregará pronto.`);
+      return;
+    }
+    // En lugar de abrir la cámara AR en este mismo archivo (como en Saludos), 
+    // navegamos a CameraScreen enviándole el modo y la seña específica.
+    navigation.navigate('Camera', { mode, seña: item.id });
   };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backText}>← Salir</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{categoria.label}</Text>
+        <Text style={styles.title}>{categoria.label}</Text>
+        <Text style={styles.subtitle}>Selecciona una seña para escanear tu tarjeta</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.instruccion}>
-          Selecciona una seña para activar la cámara y escanear su tarjeta
-        </Text>
+      <ScrollView contentContainerStyle={styles.menuGrid} showsVerticalScrollIndicator={false}>
+        {categoria.items.map((item) => (
+          <TouchableOpacity
+            key={item.id}
+            style={[styles.card, item.activo && styles.cardActive]}
+            activeOpacity={0.75}
+            onPress={() => abrirCamara(item)}
+          >
+            <View style={[styles.iconCircle, item.activo && styles.iconCircleActive]}>
+              {item.icono ? (
+                <Image source={item.icono} style={styles.iconImage} resizeMode="contain" />
+              ) : (
+                <View style={styles.iconPlaceholder} />
+              )}
+            </View>
 
-        <View style={styles.grid}>
-          {categoria.señas.map((seña) => (
-            <TouchableOpacity
-              key={seña}
-              onPress={() => abrirCamara(seña)}
-              activeOpacity={0.8}
-              style={styles.cardWrapper}
-            >
-              <LinearGradient
-                colors={categoria.colors}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.card}
-              >
-                <Text style={styles.señaTexto}>{seña}</Text>
-                <Text style={styles.señaSubtexto}>Toca para escanear</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          ))}
-        </View>
+            <Text style={[styles.cardText, !item.activo && styles.cardTextInactive]}>
+              {item.etiqueta}
+            </Text>
+
+            {!item.activo && <Text style={styles.pronto}>Próximamente</Text>}
+          </TouchableOpacity>
+        ))}
       </ScrollView>
+
+      {/* --- 4. BARRA FLOTANTE --- */}
+      <FloatingBackBar label="Vocabulario" />
     </View>
   );
 }
 
+// --- 5. ESTILOS IDÉNTICOS A SALUDOS ---
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0f172a' },
   header: {
-    paddingTop: 50,
-    paddingBottom: 15,
-    paddingHorizontal: 20,
-    flexDirection: 'row',
+    paddingTop: 60,
+    paddingBottom: 20,
     alignItems: 'center',
-    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+    paddingHorizontal: 20,
   },
-  backButton: { padding: 10, backgroundColor: '#3b82f6', borderRadius: 8 },
-  backText: { color: 'white', fontWeight: 'bold' },
-  headerTitle: { color: 'white', fontSize: 20, fontWeight: 'bold', marginLeft: 80 },
-  content: { padding: 20, paddingBottom: 40 },
-  instruccion: {
-    color: '#94a3b8',
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 20,
-  },
-  grid: {
+  title: { color: 'white', fontSize: 26, fontWeight: 'bold' },
+  subtitle: { color: '#94a3b8', fontSize: 14, marginTop: 5, textAlign: 'center' },
+  menuGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 16,
-    justifyContent: 'center',
-  },
-  cardWrapper: {
-    width: '45%',
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+    paddingBottom: 120, // Espacio para la FloatingBackBar
   },
   card: {
-    borderRadius: 16,
-    padding: 24,
+    backgroundColor: '#1e293b',
+    width: '48%',
+    paddingVertical: 28,
+    paddingHorizontal: 12,
+    borderRadius: 20,
     alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 120,
-    elevation: 4,
+    marginBottom: 15,
+    borderWidth: 2,
+    borderColor: '#334155',
+    gap: 10,
   },
-  señaTexto: { color: 'white', fontSize: 48, fontWeight: 'bold' },
-  señaSubtexto: { color: 'rgba(255,255,255,0.7)', fontSize: 12, marginTop: 8 },
+  cardActive: {
+    borderColor: '#06b6d4',
+    backgroundColor: '#0e7490',
+    shadowColor: '#06b6d4',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  iconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#334155',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  iconCircleActive: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+  },
+  iconImage: {
+    width: 58,
+    height: 58,
+  },
+  iconPlaceholder: {
+    width: 58,
+    height: 58,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#94a3b8',
+    opacity: 0.4,
+  },
+  cardText: { color: 'white', fontSize: 14, fontWeight: '600', textAlign: 'center' },
+  cardTextInactive: { color: '#94a3b8' },
+  pronto: { color: '#475569', fontSize: 11, fontWeight: '500' },
   errorText: { color: 'white', fontSize: 16, textAlign: 'center', marginTop: 40 },
 });
