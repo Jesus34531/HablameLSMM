@@ -12,14 +12,15 @@ import Memorama from './screens/games/Memorama';
 import Adivina from './screens/games/Adivina';
 import CameraScreen from './screens/Camera';
 import SelectorSeñas from './screens/SelectorSeñas';
-import TribiaDias from './screens/games/TribiaDias';
 import AprendizajeSaludos from './screens/Saludos'; // ← pantalla de saludos AR
 import type { UserProfile } from '../App';
+import RompecabezasColores from './screens/games/RompecabezasColores';
 
 export type RootStackParamList = {
   Welcome: undefined;
   MainTabs: undefined;
-  GameTribiaDias: undefined;
+  // Ya eliminamos GameTribiaDias de aquí
+  GameRompecabezasColores:{};
   GameMemorama: { level?: number };
   GameAdivina: { level?: number };
   Camera: { mode: string; seña: string };
@@ -31,8 +32,6 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
 
 // ── Slots para tus íconos PNG ──
-// Reemplaza cada require() con la ruta a tu archivo PNG cuando lo tengas listo.
-// Ejemplo: const iconoInicio = require('../../assets/iconos/tab_inicio.png');
 const iconoInicio    = require('../assets/iconos/home.png'); // 🔲 PON TU PNG AQUÍ
 const iconoVocab     = require('../assets/iconos/ra_2.png'); // 🔲 PON TU PNG AQUÍ
 const iconoJuegos    = require('../assets/iconos/juego2.png'); // 🔲 PON TU PNG AQUÍ
@@ -138,13 +137,12 @@ export default function Navigation({ userProfile, updateUserProfile }: Navigatio
           component={CameraScreen}
           options={{ presentation: 'fullScreenModal' }}
         />
-        {/* Pantalla AR de saludos — accesible desde la tarjeta de Saludos en Vocabulario */}
         <Stack.Screen
           name="AprendizajeSaludos"
           component={AprendizajeSaludos}
           options={{ presentation: 'card' }}
         />
-        <Stack.Screen name="GameTribiaDias" component={TribiaDias} />
+        <Stack.Screen name='GameRompecabezasColores' component={RompecabezasColores}/>
         <Stack.Screen name="GameMemorama" component={Memorama} />
         <Stack.Screen name="GameAdivina" component={Adivina} />
       </Stack.Navigator>

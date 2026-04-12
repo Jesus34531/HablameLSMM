@@ -1,39 +1,50 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ImageSourcePropType } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Gamepad2, Brain, CircleHelp ,CalendarDays} from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../Navigation';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
+// Definimos la estructura para tener un tipado correcto
+interface GameType {
+  id: string;
+  title: string;
+  description: string;
+  icon: ImageSourcePropType;
+  colors: readonly [string, string];
+}
+
 export default function Juegos() {
   const navigation = useNavigation<NavigationProp>();
 
-  const games = [
-  {
-    id: 'GameTribiaDias',
-    title: 'Días de la Semana',
-    description: '¿Puedes identificar el día correcto viendo solo la seña?',
-    icon: CalendarDays,
-    colors: ['#0ea5e9', '#0369a1'] as const, // <--- AGREGA "as const" AQUÍ
-  },
-  {
-    id: 'GameMemorama',
-    title: 'Memorama Animales',
-    description: 'Desafía tu mente con 5 niveles de dificultad progresiva.',
-    icon: Brain,
-    colors: ['#06b6d4', '#0e7490'] as const,
-  },
-  {
-    id: 'GameAdivina',
-    title: 'Adivina la Letra',
-    description: 'Pon a prueba tu dominio del abecedario LSM',
-    icon: CircleHelp, // <--- CORRECCIÓN: Usa CircleHelp aquí
-    colors: ['#0369a1', '#a855f7'] as const, // <--- AGREGA "as const" AQUÍ
-  }
-];
+  const games: GameType[] = [
+    {
+      id: 'GameRompecabezasDias',
+      title: 'Rompecabezas Colores',
+      description: 'Arma el rompecabezas del color que elijas',
+      // REEMPLAZA CON EL NOMBRE REAL DE TU ARCHIVO
+      icon: require('../../assets/iconos/rompecabeza.png'), 
+      colors: ['#0ea5e9', '#0369a1'] as const,
+    },
+    {
+      id: 'GameMemorama',
+      title: 'Memorama Animales',
+      description: 'Desafía tu mente con 5 niveles de dificultad progresiva.',
+      // REEMPLAZA CON EL NOMBRE REAL DE TU ARCHIVO
+      icon: require('../../assets/iconos/memorama.png'), 
+      colors: ['#06b6d4', '#0e7490'] as const,
+    },
+    {
+      id: 'GameAdivina',
+      title: 'Adivina la Letra',
+      description: 'Pon a prueba tu dominio del abecedario LSM',
+      // REEMPLAZA CON EL NOMBRE REAL DE TU ARCHIVO
+      icon: require('../../assets/iconos/adivinar.png'), 
+      colors: ['#0369a1', '#a855f7'] as const,
+    }
+  ];
 
   const handlePlayGame = (screenName: string) => {
     // @ts-ignore
@@ -46,14 +57,12 @@ export default function Juegos() {
       
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Gamepad2 color="#22d3ee" size={40} style={{ marginBottom: 10 }} />
-          <Text style={styles.title}>Zona de Juegos</Text>
+          <Text style={styles.title}>Juegos</Text>
           <Text style={styles.subtitle}>Refuerza tu aprendizaje divirtiéndote</Text>
         </View>
 
         <View style={styles.gamesList}>
           {games.map((game) => {
-            const Icon = game.icon;
             return (
               <TouchableOpacity
                 key={game.id}
@@ -67,7 +76,11 @@ export default function Juegos() {
                   style={styles.gameCard}
                 >
                   <View style={styles.iconContainer}>
-                    <Icon color="white" size={32} />
+                    <Image 
+                      source={game.icon} 
+                      style={styles.iconImage}
+                      resizeMode="contain" 
+                    />
                   </View>
                   
                   <View style={styles.textContainer}>
@@ -114,6 +127,12 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 15,
     marginRight: 15,
+  },
+  // ESTE ES EL COMPONENTE QUE DICTA EL TAMAÑO
+  iconImage: {
+    width: 60,  // <--- Aumenté de 32 a 48 para hacerlo más grande
+    height: 60, // <--- Aumenté de 32 a 48 para hacerlo más grande
+    // Se eliminó 'tintColor' para respetar los colores originales de la imagen
   },
   textContainer: { flex: 1 },
   gameTitle: { fontSize: 18, fontWeight: 'bold', color: 'white', marginBottom: 4 },

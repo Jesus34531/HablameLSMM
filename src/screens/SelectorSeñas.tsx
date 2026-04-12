@@ -25,11 +25,11 @@ const CATEGORIAS: Record<string, CategoriaData> = {
   vocales: {
     label: 'Vocales',
     items: [
-      { id: 'A', etiqueta: 'Vocal A', activo: true, icono: null }, // Reemplaza null con require('../../assets/iconos/letra_a.png')
-      { id: 'E', etiqueta: 'Vocal E', activo: true, icono: null },
-      { id: 'I', etiqueta: 'Vocal I', activo: false, icono: null }, // Ejemplo de inactivo
-      { id: 'O', etiqueta: 'Vocal O', activo: false, icono: null },
-      { id: 'U', etiqueta: 'Vocal U', activo: false, icono: null },
+      { id: 'A', etiqueta: 'Vocal A', activo: true, icono: require('../../assets/ic_vocales/a.png') }, // Reemplaza null con require('../../assets/iconos/letra_a.png')
+      { id: 'E', etiqueta: 'Vocal E', activo: true, icono: require('../../assets/ic_vocales/e.png') },
+      { id: 'I', etiqueta: 'Vocal I', activo: false, icono: require('../../assets/ic_vocales/i.png') }, // Ejemplo de inactivo
+      { id: 'O', etiqueta: 'Vocal O', activo: false, icono: require('../../assets/ic_vocales/o.png') },
+      { id: 'U', etiqueta: 'Vocal U', activo: false, icono: require('../../assets/ic_vocales/u.png') },
     ],
   },
   colores: {

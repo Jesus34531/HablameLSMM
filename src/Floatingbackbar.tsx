@@ -3,15 +3,24 @@ import { View, Text, TouchableOpacity, StyleSheet, Platform, Image } from 'react
 import { useNavigation } from '@react-navigation/native';
 
 // 🔲 Slot para tu ícono PNG de "volver"
-// Cuando tengas tu asset, reemplaza null por: require('../../assets/iconos/back.png')
 const iconoVolver = require('../assets/iconos/volver.png');
 
 interface FloatingBackBarProps {
   label?: string; // texto opcional que aparece junto al botón (por defecto "Volver")
+  onPress?: () => void; // NUEVO: Permite sobreescribir la acción de volver
 }
 
-export default function FloatingBackBar({ label = 'Volver' }: FloatingBackBarProps) {
+export default function FloatingBackBar({ label = 'Volver', onPress }: FloatingBackBarProps) {
   const navigation = useNavigation();
+
+  // Función que decide qué hacer al presionar
+  const handlePress = () => {
+    if (onPress) {
+      onPress(); // Si se le pasa una función, la ejecuta (ej. volver al grid interno)
+    } else {
+      navigation.goBack(); // Si no, hace el comportamiento por defecto de React Navigation
+    }
+  };
 
   return (
     <View style={styles.wrapper} pointerEvents="box-none">
@@ -19,7 +28,7 @@ export default function FloatingBackBar({ label = 'Volver' }: FloatingBackBarPro
         <TouchableOpacity
           style={styles.button}
           activeOpacity={0.75}
-          onPress={() => navigation.goBack()}
+          onPress={handlePress}
         >
           {/* Ícono PNG si está disponible, sino flecha de texto */}
           {iconoVolver ? (
@@ -29,7 +38,6 @@ export default function FloatingBackBar({ label = 'Volver' }: FloatingBackBarPro
               resizeMode="contain"
             />
           ) : (
-            // 🔲 Placeholder — reemplaza iconoVolver con tu PNG para quitar esto
             <Text style={styles.arrow}>←</Text>
           )}
           <Text style={styles.label}>{label}</Text>
